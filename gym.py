@@ -1,6 +1,5 @@
 import sys
 from numpy import *
-from gym import Model
 
 rng = random.default_rng()
 
@@ -15,9 +14,7 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-populacija =[]
-for i in range (101):
-    populacija.append(Model([10,10,10,10,10,9], 33600))
+
 class Model:
     def feed_forward(self, ulaz):
         ulaz = ulaz / 255.0
@@ -74,3 +71,4 @@ class Model:
         env.close()
         print(result)
         return result
+
