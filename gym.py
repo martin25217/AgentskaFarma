@@ -22,7 +22,6 @@ class model:
     def __init__(self, sloj, ulaz):
         self.sloj = sloj
         self.ulaz = ulaz
-        print(a)
         weights=[]
         biases=[]
 
@@ -45,17 +44,17 @@ class model:
         print(weights, '\n')
         print(biases, '\n')
         print(len(weights[0]))
+        return env.action_space.sample()
 
-def model(_obs):
-    return env.action_space.sample()
-
+    
 
 obs, info = env.reset()
 while True:
-    action = model(obs)
+    action = model([1000, 1000, 1000, 1000, 1000, 9], obs)
     obs, reward, terminated, truncated, info = env.step(action)
     print(obs.shape, action, reward)
-    test = model([1000, 1000, 1000, 1000, 1000, 8], obs)
+    print(obs)
+    #test = 
 
     l1 = [1,2]
     l2 = [5,2]
