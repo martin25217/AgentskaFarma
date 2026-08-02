@@ -25,8 +25,8 @@ class model:
         for weights, biases in zip(self.weights, self.biases):
             ulaz = sigmoid(matmul(ulaz, weights) + biases)
 
-            return ulaz
-
+        return ulaz
+    
     def __init__(self, sloj, ulaz):
         self.sloj = sloj
         self.ulaz = ulaz
@@ -50,22 +50,24 @@ class model:
 
         for i in range(len(sloj)):
             temp = []
-            for j in range (len(sloj[i])):
+            for j in range (sloj[i]):
                 temp.append(rng.random())
             biases.append(temp)
+    self.weights=weights
+    self.biases=biases
 
     
 
 obs, info = env.reset()
 mreza = model([10,10,10,10,9], obs)
+
 while True:
-    action = env.action_space.sample()
+
+    action = int(argmax(mreza.feed_forward(obs)))
     obs, reward, terminated, truncated, info = env.step(action)
     print(obs.shape, action, reward)
-    print(obs)
-
-    # zb = matmul(l1,l2)
-    # print(zb)
+    
+    
     if terminated or truncated:
         break
 env.close()
