@@ -53,8 +53,8 @@ class model:
             for j in range (sloj[i]):
                 temp.append(rng.random())
             biases.append(temp)
-    self.weights=weights
-    self.biases=biases
+        self.weights=weights
+        self.biases=biases
 
     
 
@@ -71,11 +71,3 @@ while True:
     if terminated or truncated:
         break
 env.close()
-
-
-
-
-
-
-
-
