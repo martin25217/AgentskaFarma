@@ -28,7 +28,7 @@ class model:
         for i in range(len(sloj)):
             var = len(ulaz)
             if (i > 0):
-                var = len(sloj[i-1])
+                var = sloj[i-1]
             
             temp = []
             biastemp = []
@@ -41,23 +41,21 @@ class model:
             weights.append(temp)
             biases.append(biastemp)
         
-        print(weights, '\n')
-        print(biases, '\n')
-        print(len(weights[0]))
-        return env.action_space.sample()
+        print(weights)
+        #print(biases, '\n')
+        #print(len(weights[0]))
+
+
+        #return env.action_space.sample()
 
     
 
 obs, info = env.reset()
 while True:
-    action = model([1000, 1000, 1000, 1000, 1000, 9], obs)
+    akcija = model([10,10,10,10,9], obs)
     obs, reward, terminated, truncated, info = env.step(action)
     print(obs.shape, action, reward)
     print(obs)
-    #test = 
-
-    l1 = [1,2]
-    l2 = [5,2]
 
     zb = matmul(l1,l2)
     print(zb)
