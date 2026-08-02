@@ -2,7 +2,7 @@ import sys
 
 sys.path.pop(0)
 
-import ale_py
+#import ale_py
 import gymnasium as gym
 
 gym.register_envs(ale_py)
@@ -25,9 +25,4 @@ env.close()
 
 
 
-# class Model:
-#     def __init__():
-#         weights=[]
-#         biases=[]
-#         for i in (5,12):
-        
+
