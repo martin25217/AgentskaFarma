@@ -32,7 +32,7 @@ class Model:
         biases=[]
 
         for i in range(len(sloj)):
-            var = len(ulaz)
+            var = ulaz
             if (i > 0):
                 var = sloj[i-1]
             
