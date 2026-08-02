@@ -57,13 +57,13 @@ class Model:
     
 
     def eval_model(self):
-        obs, info = env.reset()
         env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="human")
         env = gym.wrappers.FlattenObservation(env)
+        obs, info = env.reset()
         result = 0
         while True:
 
-            action = int(argmax(mreza.feed_forward(obs)))
+            action = int(argmax(self.feed_forward(obs)))
             obs, reward, terminated, truncated, info = env.step(action)
             result = result + reward
     
@@ -71,6 +71,5 @@ class Model:
                 break
         env.close()
         print(result)
-        return model, result
-
+        return result
 
