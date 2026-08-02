@@ -12,4 +12,6 @@ obs, info = env.reset()
 while True:
     obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
     print(obs.shape, reward, terminated, truncated)
+    if terminated or truncated:
+        break
 env.close()
