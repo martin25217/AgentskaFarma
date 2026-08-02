@@ -16,6 +16,34 @@ gym.register_envs(ale_py)
 
 
 class Model:
+    def cross(self,x1,x2):
+        self.x1 = x1
+        self.x2 = x2
+        weightx = []
+        biasex = []
+        for i in range(len(x1.weights)):
+            temp = []
+            for j in range(len(x1.weights[i])):
+                tempdublje = []
+                for o in range(len(x1.weights[i][j])):
+                    nw = (x1.weights[i][j][o]+x2.weights[i][j][o])/2
+                    tempdublje.append(nw)
+                temp.append(tempdublje)
+            weightx.append(temp)
+
+        for i in range(len(x1.biases)):
+            temp = []
+            for j in range(len(x1.biases[i])):
+                nw = (x1.biases[i][j]+x2.biases[i][j])/2
+                temp.append(nw)
+            biasex.append(temp)
+
+        x1.weights = weightx
+        x1.biases = biasex
+        print("done", '\n')
+        print(x1.weights[0][0][0])
+
+
     def feed_forward(self, ulaz):
         ulaz = ulaz / 255.0
 
@@ -50,6 +78,7 @@ class Model:
             for j in range (sloj[i]):
                 temp.append(rng.random())
             biases.append(temp)
+        #print(weights, '\n')
         self.weights=weights
         self.biases=biases
 
@@ -69,6 +98,4 @@ class Model:
             if terminated or truncated:
                 break
         env.close()
-        print(result)
         return result
-
