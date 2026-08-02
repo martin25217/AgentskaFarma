@@ -57,7 +57,7 @@ class Model:
     
 
     def eval_model(self):
-        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="human")
+        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
         env = gym.wrappers.FlattenObservation(env)
         obs, info = env.reset()
         result = 0
