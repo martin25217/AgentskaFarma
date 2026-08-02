@@ -1,1 +1,9 @@
-abcdefgh
+import random
+
+items = [1,8,6,4,7,0,2]
+picked1 = random.choice(items)
+items.pop(items.index(picked1))
+picked2 = random.choice(items)
+items.pop(items.index(picked2))
+j=[picked1,picked2]
+print(j,items)
