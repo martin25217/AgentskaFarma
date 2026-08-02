@@ -7,11 +7,18 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", render_mode="human")
+env = gym.make("ALE/MsPacman-v5", render_mode="rgb_array")
+
+
+def model(_obs):
+    return env.action_space.sample()
+
+
 obs, info = env.reset()
 while True:
-    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
-    print(obs.shape, reward, terminated, truncated)
+    action = model(obs)
+    obs, reward, terminated, truncated, info = env.step(action)
+    print(obs.shape, action, reward)
     if terminated or truncated:
         break
 env.close()
