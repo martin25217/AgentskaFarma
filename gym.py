@@ -14,8 +14,6 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
-env = gym.wrappers.FlattenObservation(env)
 
 
 class model:
@@ -58,16 +56,21 @@ class model:
 
     
 
-obs, info = env.reset()
-mreza = model([10,10,10,10,9], obs)
+    def eval_model(self):
+        obs, info = env.reset()
+        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="human")
+        env = gym.wrappers.FlattenObservation(env)
+        result = 0
+        while True:
 
-while True:
+            action = int(argmax(mreza.feed_forward(obs)))
+            obs, reward, terminated, truncated, info = env.step(action)
+            result = result + reward
+    
+            if terminated or truncated:
+                break
+        env.close()
+        print(result)
+        return model, result
 
-    action = int(argmax(mreza.feed_forward(obs)))
-    obs, reward, terminated, truncated, info = env.step(action)
-    print(obs.shape, action, reward)
-    
-    
-    if terminated or truncated:
-        break
-env.close()
+
