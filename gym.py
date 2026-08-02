@@ -51,14 +51,15 @@ class model:
     
 
 obs, info = env.reset()
+mreza = model([10,10,10,10,9], obs)
 while True:
-    akcija = model([10,10,10,10,9], obs)
+    action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
     print(obs.shape, action, reward)
     print(obs)
 
-    zb = matmul(l1,l2)
-    print(zb)
+    # zb = matmul(l1,l2)
+    # print(zb)
     if terminated or truncated:
         break
 env.close()
