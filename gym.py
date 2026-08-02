@@ -3,6 +3,9 @@ from numpy import *
 
 rng = random.default_rng()
 
+def sigmoid(x):
+    return 1 / (1 + exp(-x))
+
 sys.path.pop(0)
 
 import ale_py
@@ -19,6 +22,14 @@ env = gym.wrappers.FlattenObservation(env)
 
 
 class model:
+    def feed_forward(self, ulaz):
+        ulaz = ulaz / 255.0
+
+        for weights, biases in zip(self.weights, self.biases):
+            ulaz = sigmoid(matmul(ulaz, weights) + biases)
+
+            return ulaz
+
     def __init__(self, sloj, ulaz):
         self.sloj = sloj
         self.ulaz = ulaz
