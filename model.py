@@ -2,9 +2,12 @@ from numpy import *
 
 rng = random.default_rng()
 
+a = "fjdfo"
+
 class model:
-    def __init__(self, p1):
+    def __init__(self, slojevi, ):
         self.p1 = p1
+        print(a)
         weights=[]
         biases=[]
         for i in range(len(p1)):
