@@ -38,8 +38,8 @@ class Model:
                 temp.append(nw)
             biasex.append(temp)
 
-        x1.weights = weightx
-        x1.biases = biasex
+        x1.weights = [array(weight) for weight in weightx]
+        x1.biases = [array(bias) for bias in biasex]
         print("done", '\n')
         print(x1.weights[0][0][0])
 
@@ -79,8 +79,8 @@ class Model:
                 temp.append(rng.random())
             biases.append(temp)
         #print(weights, '\n')
-        self.weights=weights
-        self.biases=biases
+        self.weights=[array(weight) for weight in weights]
+        self.biases=[array(bias) for bias in biases]
 
     
 
