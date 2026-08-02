@@ -15,9 +15,10 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-
-
-class Model:
+populacija=[]
+for i in range(101):
+    populacija.append(Model([10,10,10,10,10,9], 33600))
+    class Model:
     def feed_forward(self, ulaz):
         ulaz = ulaz / 255.0
 
@@ -73,13 +74,4 @@ class Model:
         env.close()
         print(result)
         return result
-for i in range (91):
-    eval_model = (100)
-    ran = random.shuffle(eval_model)
-    par = split(2)
-    a = (ran[par])
-modeli = (list(reversed(eval_model)))
-eli = split(10)
-mid = (modeli[eli])
-,
 
