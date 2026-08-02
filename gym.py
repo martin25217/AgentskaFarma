@@ -16,7 +16,7 @@ gym.register_envs(ale_py)
 
 
 
-class model:
+class Model:
     def feed_forward(self, ulaz):
         ulaz = ulaz / 255.0
 
