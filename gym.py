@@ -12,9 +12,6 @@ import ale_py
 import gymnasium as gym
 
 
-
-
-
 gym.register_envs(ale_py)
 
 env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
@@ -42,22 +39,20 @@ class model:
                 var = sloj[i-1]
             
             temp = []
-            biastemp = []
+            
             for j in range (var):
                 tempdublje = []
                 for k in range (sloj[i]):
                     tempdublje.append(rng.random())
                 temp.append(tempdublje)
-                biastemp.append(rng.random())
+                
             weights.append(temp)
-            biases.append(biastemp)
-        
-        print(weights)
-        #print(biases, '\n')
-        #print(len(weights[0]))
 
-
-        #return env.action_space.sample()
+        for i in range(len(sloj)):
+            temp = []
+            for j in range (len(sloj[i])):
+                temp.append(rng.random())
+            biases.append(temp)
 
     
 
