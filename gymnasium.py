@@ -7,7 +7,7 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", render_mode="rgb_array")
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
 
 
 def model(_obs):
@@ -22,3 +22,12 @@ while True:
     if terminated or truncated:
         break
 env.close()
+
+
+
+# class Model:
+#     def __init__():
+#         weights=[]
+#         biases=[]
+#         for i in (5,12):
+        
