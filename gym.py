@@ -41,7 +41,8 @@ class Model:
 
         x1.weights = weightx
         x1.biases = biasex
-        print("done")
+        print("done", '\n')
+        print(x1.weights[0][0][0])
 
 
     def feed_forward(self, ulaz):
@@ -85,7 +86,7 @@ class Model:
     
 
     def eval_model(self):
-        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
+        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="human")
         env = gym.wrappers.FlattenObservation(env)
         obs, info = env.reset()
         result = 0
