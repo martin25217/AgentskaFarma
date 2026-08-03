@@ -6,10 +6,12 @@ kol = 10
 par = 50
 
 populacija= []
+maxi = -1
 for i in range (par):
     x = Model([kol,kol,kol,kol,kol,9], 33600)
     r1 = x.eval_model()
     populacija.append([r1,x])
+    maxi = max(maxi,r1)
 
 populacija.sort(key=lambda item: item[0], reverse=True)
 b = []
@@ -25,7 +27,15 @@ for j in range(100):
         p2=random.choice(populacija)
         dijete = Model([kol,kol,kol,kol,kol,9], 33600)
         dijete.cross(p1[1],p2[1])
-        rew = dijete.eval_model()
+        
+        if (p1[0] >= maxi or p2[0] >= maxi):
+            maxi = max(p1[0],maxi)
+            maxi = max(p2[0],maxi)  
+            rew = dijete.eval_model("human")   
+        else:
+            rew = dijete.eval_model()
+
+
 
         populacija.append([rew, dijete])
 
@@ -43,4 +53,3 @@ for j in range(100):
         b.append(populacija[i])
 
     print(len(populacija), '\n' , populacija[0][0])
-    print("Replay:", populacija[0][1].eval_model("human"))
