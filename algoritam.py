@@ -1,6 +1,6 @@
 from gym import Model  
 import random 
-#import pickle as pc
+import pickle as pc
 
 kol = 30
 velicina_populacije = 30
@@ -21,7 +21,7 @@ for _ in range(broj_generacija):
         evaluacija.append([score, model])
 
     evaluacija.sort(key=lambda item: item[0], reverse= True)
-    
+    pc.dump(evaluacija[0][1], open('peakmodel.pkl','wb'))
     nova_populacija = []
 
     for idx in range(elitizam):
