@@ -3,7 +3,7 @@ import random
 import pickle as pc
 
 kol = 10
-par = 30
+par = 50
 
 populacija= []
 for i in range (par):
@@ -43,3 +43,4 @@ for j in range(100):
         b.append(populacija[i])
 
     print(len(populacija), '\n' , populacija[0][0])
+    print("Replay:", populacija[0][1].eval_model("human"))

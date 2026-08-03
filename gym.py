@@ -14,9 +14,6 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
-env = gym.wrappers.FlattenObservation(env)
-
 
 class Model:
     def cross(self,x1,x2):
@@ -85,9 +82,10 @@ class Model:
 
     
 
-    def eval_model(self):
-        obs, info = env.reset()
-        poc = info["lives"]
+    def eval_model(self, render_mode=None):
+        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode=render_mode)
+        env = gym.wrappers.FlattenObservation(env)
+        obs, info = env.reset(seed=0)
         result = 0
         while True:
 
@@ -95,7 +93,7 @@ class Model:
             obs, reward, terminated, truncated, info = env.step(action)
             result = result + reward
     
-            if terminated or truncated or info["lives"] < poc:
+            if terminated or truncated:
                 break
         env.close()
         return result
