@@ -1,8 +1,23 @@
 from gym import Model  
 import random 
 #import pickle as pc
+import numpy as np
 
-kol = 30
+
+def cross (parent1, parent2):
+    for i in range (populacija-elitizam):
+        dijete=Model([kol,kol,kol,kol,kol,9], 33600)
+        return dijete
+
+def pick_weighted(populacija, score, n=1):
+    score = np.array(score, dtype=float)
+    probabilities = score / score.sum()
+    idx = np.random.choice(len(populacija), size=n, p=probabilities)
+    return [populacija[i] for i in idx]
+
+
+kol = 200
+
 velicina_populacije = 30
 elitizam = int(velicina_populacije * 0.1)
 broj_generacija = 100
@@ -27,13 +42,8 @@ for _ in range(broj_generacija):
     for idx in range(elitizam):
         nova_populacija.append(evaluacija[idx][1])
     
-    for i in range (velicina_populacije - elitizam):
-        p1=random.choice(populacija)
-        p2=random.choice(populacija)
 
-        dijete = Model([kol,kol,kol,kol,kol,9], 33600)
-        dijete.cross(p1,p2,sigma)
-        nova_populacija.append(dijete)
+    
 
     print(populacija[0].eval_model())
     populacija = nova_populacija 

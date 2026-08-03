@@ -32,7 +32,7 @@ class Model:
                 for o in range(len(x1.weights[i][j])):
                     nw = (x1.weights[i][j][o]+x2.weights[i][j][o])/2
                     if(random.randint(0,100) > 90):
-                        nw = nw + random.normal(0, sigma, 1)
+                        nw = nw + random.normal(0, sigma)
                     print(flip)
                     tempdublje.append(nw)
                 temp.append(tempdublje)
