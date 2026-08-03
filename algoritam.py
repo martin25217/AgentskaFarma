@@ -16,8 +16,8 @@ sort = (list(reversed(populacija)))
 b=slice(10)
 populacija = (sort[b])
 for i in range (91):
-    p1=random.choice(Model)
-    p2=random.choice(Model)
+    p1=random.choice(populacija)
+    p2=random.choice(populacija)
     dijete.cross(p1,p2)
     populacija=populacija + dijete 
 for i in range (101):
