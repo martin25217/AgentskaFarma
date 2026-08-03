@@ -40,8 +40,8 @@ class Model:
 
         x1.weights = [array(weight) for weight in weightx]
         x1.biases = [array(bias) for bias in biasex]
-        print("done", '\n')
-        print(x1.weights[0][0][0])
+        #print("done", '\n')
+        #print(x1.weights[0][0][0])
 
 
     def feed_forward(self, ulaz):
