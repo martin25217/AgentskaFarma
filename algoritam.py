@@ -33,13 +33,11 @@ for j in range(100):
     populacija.sort(key=lambda item: item[0], reverse=True)
     
     for i in range (10):
-       populacija.append(b[i])
-    print(len(populacija))
-    populacija = populacija[20:]
-   # print(len(populacija))
-    populacija.sort(key=lambda item: item[0], reverse=True)
-    b = []
-    for i in range (10):  
-        b.append(populacija[i])
+        populacija.append(b[i])
+populacija.sort(key=lambda item: item[0], reverse=True)
+populacija = populacija[:20]
+b = []
+for i in range (10):
+    b.append(populacija[i])
 
     print(len(populacija), '\n' , populacija[0][0])
