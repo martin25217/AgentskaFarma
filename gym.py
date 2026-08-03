@@ -1,4 +1,7 @@
+import pickle
 import sys
+from pathlib import Path
+
 from numpy import *
 
 rng = random.default_rng()
@@ -14,32 +17,46 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
+env = gym.wrappers.FlattenObservation(env)
+
+STOPA_MUTACIJE = 0.1
+
+
+def mutiraj(x, korak):
+    maska = rng.random(x.shape) < STOPA_MUTACIJE
+    return x + maska * rng.normal(0, korak, x.shape)
+
+
+def krizaj(a, b):
+    return where(rng.random(a.shape) < 0.5, a, b)
+
 
 class Model:
-    def cross(self,x1,x2):
-        self.x1 = x1
-        self.x2 = x2
-        weightx = []
-        biasex = []
-        for i in range(len(x1.weights)):
-            temp = []
-            for j in range(len(x1.weights[i])):
-                tempdublje = []
-                for o in range(len(x1.weights[i][j])):
-                    nw = (x1.weights[i][j][o]+x2.weights[i][j][o])/2
-                    tempdublje.append(nw)
-                temp.append(tempdublje)
-            weightx.append(temp)
+    def save(self, path):
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("wb") as file:
+            pickle.dump((self.sloj, self.ulaz, self.weights, self.biases), file)
 
-        for i in range(len(x1.biases)):
-            temp = []
-            for j in range(len(x1.biases[i])):
-                nw = (x1.biases[i][j]+x2.biases[i][j])/2
-                temp.append(nw)
-            biasex.append(temp)
+    @classmethod
+    def load(cls, path):
+        with Path(path).open("rb") as file:
+            sloj, ulaz, weights, biases = pickle.load(file)
+        model = cls(sloj, ulaz)
+        model.weights, model.biases = weights, biases
+        return model
 
-        self.weights = [array(weight) for weight in weightx]
-        self.biases = [array(bias) for bias in biasex]
+    def cross(self,x1,x2, sigma):
+        self.weights = []
+        self.biases = []
+        for i, fan_in in enumerate(self.fan_in()):
+            korak = sigma / sqrt(fan_in)
+            self.weights.append(mutiraj(krizaj(x1.weights[i], x2.weights[i]), korak))
+            self.biases.append(mutiraj(krizaj(x1.biases[i], x2.biases[i]), korak))
+
+    def fan_in(self):
+        return [self.ulaz if i == 0 else self.sloj[i-1] for i in range(len(self.sloj))]
 
 
     def feed_forward(self, ulaz):
@@ -53,48 +70,34 @@ class Model:
     def __init__(self, sloj, ulaz):
         self.sloj = sloj
         self.ulaz = ulaz
-        weights=[]
-        biases=[]
+        self.weights = []
+        self.biases = []
 
-        for i in range(len(sloj)):
-            var = ulaz
-            if (i > 0):
-                var = sloj[i-1]
-            
-            temp = []
-            
-            for j in range (var):
-                tempdublje = []
-                for k in range (sloj[i]):
-                    tempdublje.append(rng.normal(0, 1 / sqrt(var)))
-                temp.append(tempdublje)
-                
-            weights.append(temp)
-
-        for i in range(len(sloj)):
-            temp = []
-            for j in range (sloj[i]):
-                temp.append(0.0)
-            biases.append(temp)
-        #print(weights, '\n')
-        self.weights=[array(weight) for weight in weights]
-        self.biases=[array(bias) for bias in biases]
+        for i, var in enumerate(self.fan_in()):
+            self.weights.append(rng.normal(0, 1 / sqrt(var), (var, sloj[i])))
+            self.biases.append(zeros(sloj[i]))
 
     
 
-    def eval_model(self, render_mode=None):
-        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode=render_mode)
-        env = gym.wrappers.FlattenObservation(env)
-        obs, info = env.reset(seed=0)
+    def eval_model(self, render_mode=None, seed=None):
+        run_env = env
+        if render_mode is not None:
+            run_env = gym.wrappers.FlattenObservation(
+                gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode=render_mode)
+            )
+
+        obs, info = run_env.reset(seed=seed)
+        poc = info["lives"]
         result = 0
         while True:
 
             action = int(argmax(self.feed_forward(obs)))
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, info = run_env.step(action)
             result = result + reward
-    
-            if terminated or truncated:
+
+            if terminated or truncated or info["lives"] < poc:
                 break
-        env.close()
+
+        if run_env is not env:
+            run_env.close()
         return result
-        
