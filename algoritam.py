@@ -2,8 +2,8 @@ from gym import Model
 import random 
 import pickle as pc
 
-kol = 5
-par = 20
+kol = 10
+par = 30
 
 populacija= []
 for i in range (par):
@@ -35,7 +35,7 @@ for j in range(100):
     for i in range (10):
        populacija.append(b[i])
     print(len(populacija))
-    populacija = populacija[20:]
+    populacija = populacija[:par]
    # print(len(populacija))
     populacija.sort(key=lambda item: item[0], reverse=True)
     b = []

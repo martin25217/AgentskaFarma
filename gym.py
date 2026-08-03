@@ -38,17 +38,17 @@ class Model:
                 temp.append(nw)
             biasex.append(temp)
 
-        x1.weights = [array(weight) for weight in weightx]
-        x1.biases = [array(bias) for bias in biasex]
+        self.weights = [array(weight) for weight in weightx]
+        self.biases = [array(bias) for bias in biasex]
         #print("done", '\n')
         #print(x1.weights[0][0][0])
 
 
     def feed_forward(self, ulaz):
-        ulaz = ulaz / 255.0
+        ulaz = ulaz / 127.5 - 1.0
 
         for weights, biases in zip(self.weights, self.biases):
-            ulaz = sigmoid(matmul(ulaz, weights) + biases)
+            ulaz = tanh(matmul(ulaz, weights) + biases)
 
         return ulaz
     
@@ -68,7 +68,7 @@ class Model:
             for j in range (var):
                 tempdublje = []
                 for k in range (sloj[i]):
-                    tempdublje.append(rng.random())
+                    tempdublje.append(rng.normal(0, 1 / sqrt(var)))
                 temp.append(tempdublje)
                 
             weights.append(temp)
@@ -76,7 +76,7 @@ class Model:
         for i in range(len(sloj)):
             temp = []
             for j in range (sloj[i]):
-                temp.append(rng.random())
+                temp.append(0.0)
             biases.append(temp)
         #print(weights, '\n')
         self.weights=[array(weight) for weight in weights]
