@@ -13,13 +13,13 @@ for i in range (par):
 
 populacija.sort(key=lambda item: item[0], reverse=True)
 b = []
-for i in range (10):
+for i in range (int(par*0.1)):
    b.append(populacija[i])
 
 print(len(populacija))
 
 for j in range(100):
-    for i in range (par-10):
+    for i in range (int(par*0.9)):
         p1=random.choice(populacija)
         
         p2=random.choice(populacija)
@@ -32,14 +32,14 @@ for j in range(100):
     
     populacija.sort(key=lambda item: item[0], reverse=True)
     
-    for i in range (10):
+    for i in range (int(par*0.1)):
        populacija.append(b[i])
     print(len(populacija))
     populacija = populacija[:par]
    # print(len(populacija))
     populacija.sort(key=lambda item: item[0], reverse=True)
     b = []
-    for i in range (10):  
+    for i in range (int(par*0.1)):  
         b.append(populacija[i])
 
     print(len(populacija), '\n' , populacija[0][0])

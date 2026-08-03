@@ -3,8 +3,8 @@ from numpy import *
 
 rng = random.default_rng()
 
-def sigmoid(x):
-    return 1 / (1 + exp(-x))
+#def sigmoid(x):
+   # return 1 / (1 + exp(-x))
 
 sys.path.pop(0)
 
@@ -13,6 +13,9 @@ import gymnasium as gym
 
 
 gym.register_envs(ale_py)
+
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
+env = gym.wrappers.FlattenObservation(env)
 
 
 class Model:
@@ -40,8 +43,6 @@ class Model:
 
         self.weights = [array(weight) for weight in weightx]
         self.biases = [array(bias) for bias in biasex]
-        #print("done", '\n')
-        #print(x1.weights[0][0][0])
 
 
     def feed_forward(self, ulaz):
@@ -85,9 +86,8 @@ class Model:
     
 
     def eval_model(self):
-        env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
-        env = gym.wrappers.FlattenObservation(env)
         obs, info = env.reset()
+        poc = info["lives"]
         result = 0
         while True:
 
@@ -95,7 +95,7 @@ class Model:
             obs, reward, terminated, truncated, info = env.step(action)
             result = result + reward
     
-            if terminated or truncated:
+            if terminated or truncated or info["lives"] < poc:
                 break
         env.close()
         return result
