@@ -25,7 +25,7 @@ class Model:
         self.sigma = sigma
         weightx = []
         biasex = []
-        for i in range(len(x1.weights):
+        for i in range(len(x1.weights)):
             temp = []
             for j in range(len(x1.weights[i])):
                 tempdublje = []
