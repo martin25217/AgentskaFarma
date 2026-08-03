@@ -3,9 +3,6 @@ from numpy import *
 
 rng = random.default_rng()
 
-#def sigmoid(x):
-   # return 1 / (1 + exp(-x))
-
 sys.path.pop(0)
 
 import ale_py
@@ -14,14 +11,12 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode="rgb_array")
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "rgb_array",repeat_action_probability=0.0)
 env = gym.wrappers.FlattenObservation(env)
 
 
 class Model:
     def cross(self, x1, x2, sigma):
-        self.x1 = x1
-        self.x2 = x2
         self.sigma = sigma
 
         weightx = []
@@ -29,7 +24,7 @@ class Model:
 
         for w1, w2 in zip(x1.weights, x2.weights):
             nw = (w1 + w2) / 2
-            mask = rng.random(nw.shape) > 0.9
+            mask = rng.random(nw.shape) > 0.85
             nw = nw + mask * rng.normal(0, sigma, nw.shape)
             weightx.append(nw)
 
@@ -64,6 +59,8 @@ class Model:
     
 
     def eval_model(self):
+        #env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode=mode)
+        #env = gym.wrappers.FlattenObservation(env)
         obs, info = env.reset()
         poc = info["lives"]
         result = 0
