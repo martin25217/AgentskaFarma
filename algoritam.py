@@ -1,45 +1,39 @@
 from gym import Model  
 import random 
-import pickle as pc
+#import pickle as pc
 
-kol = 10
-par = 30
-
+kol = 30
+velicina_populacije = 30
+elitizam = int(velicina_populacije * 0.1)
+broj_generacija = 100
 populacija= []
-for i in range (par):
+for i in range (velicina_populacije):
     x = Model([kol,kol,kol,kol,kol,9], 33600)
-    r1 = x.eval_model()
-    populacija.append([r1,x])
+    populacija.append(x)
 
-populacija.sort(key=lambda item: item[0], reverse=True)
-b = []
-for i in range (int(par*0.1)):
-   b.append(populacija[i])
+for _ in range(broj_generacija):
+    evaluacija = []
 
-print(len(populacija))
+    for model in populacija:
+        score = model.eval_model()
+        evaluacija.append([score, model])
 
-for j in range(100):
-    for i in range (int(par*0.9)):
+    evaluacija.sort(key=lambda item: item[0], reverse= True)
+    
+    nova_populacija = []
+
+    for idx in range(elitizam):
+        nova_populacija.append(evaluacija[idx][1])
+    
+    for i in range (velicina_populacije - elitizam):
         p1=random.choice(populacija)
-        
         p2=random.choice(populacija)
+
         dijete = Model([kol,kol,kol,kol,kol,9], 33600)
-        dijete.cross(p1[1],p2[1])
-        rew = dijete.eval_model()
+        dijete.cross(p1,p2)
+        nova_populacija.append(dijete)
 
-        populacija.append([rew, dijete])
-
+    print(populacija[0].eval_model())
+    populacija = nova_populacija 
     
-    populacija.sort(key=lambda item: item[0], reverse=True)
     
-    for i in range (int(par*0.1)):
-       populacija.append(b[i])
-    print(len(populacija))
-    populacija = populacija[:par]
-   # print(len(populacija))
-    populacija.sort(key=lambda item: item[0], reverse=True)
-    b = []
-    for i in range (int(par*0.1)):  
-        b.append(populacija[i])
-
-    print(len(populacija), '\n' , populacija[0][0])
