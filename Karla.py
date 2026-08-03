@@ -1,30 +1,49 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import ale_py
+import gymnasium as gym
 
-#???   n_states =        
+gym.register_envs(ale_py)
+env = gym.make("ALE/MsPacman-v5",obs_type="grayscale",render_mode="rgb_array")
+env = gym.wrappers.FlattenObservation(env)
+
 n_actions = 9         
-#???   goal_state = n_states*n_actions-1
 Q_table = {}
+
+learning_rate = 0.8
+discount_factor = 0.95
+exploration_prob = 0.2
+n_episodes = 1000
 
 
 def get_q_row(state):
-    """
-    Automatically checks if a situation is unknown.
-    If unknown, it builds a fresh row of zeros for it.
-    """
+    
     if state not in Q_table:
-        # Agent recognizes it's a new situation! Automatically adds it.
         Q_table[state] = np.zeros(n_actions)
         print(f"[Automation] Discovered completely new state: {state}. Added zero-row.")
         
     return Q_table[state]
 
 
-learning_rate = 0.8
-discount_factor = 0.95
-exploration_prob = 0.2
-n = 1000
 
-next_state, reward, done, info = env.step(action)
 
-#new_row = np.zeros(4).reshape(1, -1)      Q_table = np.append(Q_table, new_row, axis=0)
+for episode in range(n_episodes):
+    state=env.reset()
+    terminated=False
+    truncated=False
+
+    while not terminated and not truncated:
+        if np.random.rand() < exploration_prob:
+            action = np.random.choice(n_actions)
+        else:
+            action = np.argmax(get_q_row(state))
+        observation, reward, terminated, truncated, info = env.step(action)
+
+        current_row = get_q_row(state)
+        next_row = get_q_row(observation)
+        best_next_action_value = np.max(next_row)
+        
+        Q_table[state][action] += learning_rate * (reward + discount_factor * best_next_action_value * (1 - done) - Q_table[state][action])
+
+        state = observation
+
