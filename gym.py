@@ -19,17 +19,21 @@ env = gym.wrappers.FlattenObservation(env)
 
 
 class Model:
-    def cross(self,x1,x2):
+    def cross(self,x1,x2, sigma):
         self.x1 = x1
         self.x2 = x2
+        self.sigma = sigma
         weightx = []
         biasex = []
-        for i in range(len(x1.weights)):
+        for i in range(len(x1.weights):
             temp = []
             for j in range(len(x1.weights[i])):
                 tempdublje = []
                 for o in range(len(x1.weights[i][j])):
                     nw = (x1.weights[i][j][o]+x2.weights[i][j][o])/2
+                    if(random.randint(0,100) > 90):
+                        nw = nw + random.normal(0, sigma, 1)
+                    print(flip)
                     tempdublje.append(nw)
                 temp.append(tempdublje)
             weightx.append(temp)

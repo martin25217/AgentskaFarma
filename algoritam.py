@@ -6,7 +6,9 @@ kol = 30
 velicina_populacije = 30
 elitizam = int(velicina_populacije * 0.1)
 broj_generacija = 100
+sigma = 1
 populacija= []
+
 for i in range (velicina_populacije):
     x = Model([kol,kol,kol,kol,kol,9], 33600)
     populacija.append(x)
@@ -30,7 +32,7 @@ for _ in range(broj_generacija):
         p2=random.choice(populacija)
 
         dijete = Model([kol,kol,kol,kol,kol,9], 33600)
-        dijete.cross(p1,p2)
+        dijete.cross(p1,p2,sigma)
         nova_populacija.append(dijete)
 
     print(populacija[0].eval_model())
