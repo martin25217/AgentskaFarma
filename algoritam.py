@@ -3,9 +3,9 @@ import random
 import pickle as pc
 
 kol = 100
-velicina_populacije = 50
+velicina_populacije = 100
 elitizam = int(velicina_populacije * 0.1)
-broj_generacija = 1000
+broj_generacija = 100
 sigma = 0.5
 populacija= []
 
@@ -34,8 +34,8 @@ for _ in range(broj_generacija):
         nova_populacija.append(evaluacija[idx][1])
     
     for i in range (velicina_populacije - elitizam):
-        p1=random.choice(populacija)
-        p2=random.choice(populacija)
+        p1=random.choice(populacija[30:])
+        p2=random.choice(populacija[30:])
 
         dijete = Model([kol,kol,kol,kol,kol,9], 33600)
         dijete.cross(p1,p2,sigma)
@@ -43,5 +43,7 @@ for _ in range(broj_generacija):
 
     
     populacija = nova_populacija 
+    sigma *= 0.995
+    sigma = max(sigma, 0.02)    
     
     

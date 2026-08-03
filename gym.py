@@ -11,7 +11,7 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "rgb_array",repeat_action_probability=0.0)
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "human",repeat_action_probability=0.0)
 env = gym.wrappers.FlattenObservation(env)
 
 
@@ -29,7 +29,10 @@ class Model:
             weightx.append(nw)
 
         for b1, b2 in zip(x1.biases, x2.biases):
-            biasex.append((b1 + b2) / 2)
+            nb = (b1 + b2) / 2
+            mask = rng.random(nb.shape) > 0.94
+            nb += mask * rng.normal(0, sigma, nb.shape)
+            biasex.append(nb)
 
         self.weights = weightx
         self.biases = biasex
@@ -72,5 +75,4 @@ class Model:
     
             if terminated or truncated or info["lives"] < poc:
                 break
-        env.close()
         return result
