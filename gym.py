@@ -19,34 +19,25 @@ env = gym.wrappers.FlattenObservation(env)
 
 
 class Model:
-    def cross(self,x1,x2, sigma):
+    def cross(self, x1, x2, sigma):
         self.x1 = x1
         self.x2 = x2
         self.sigma = sigma
+
         weightx = []
         biasex = []
-        for i in range(len(x1.weights)):
-            temp = []
-            for j in range(len(x1.weights[i])):
-                tempdublje = []
-                for o in range(len(x1.weights[i][j])):
-                    nw = (x1.weights[i][j][o]+x2.weights[i][j][o])/2
-                    if(random.randint(0,100) > 90):
-                        nw = nw + random.normal(0, sigma, 1)
-                    print(flip)
-                    tempdublje.append(nw)
-                temp.append(tempdublje)
-            weightx.append(temp)
 
-        for i in range(len(x1.biases)):
-            temp = []
-            for j in range(len(x1.biases[i])):
-                nw = (x1.biases[i][j]+x2.biases[i][j])/2
-                temp.append(nw)
-            biasex.append(temp)
+        for w1, w2 in zip(x1.weights, x2.weights):
+            nw = (w1 + w2) / 2
+            mask = rng.random(nw.shape) > 0.9
+            nw = nw + mask * rng.normal(0, sigma, nw.shape)
+            weightx.append(nw)
 
-        self.weights = [array(weight) for weight in weightx]
-        self.biases = [array(bias) for bias in biasex]
+        for b1, b2 in zip(x1.biases, x2.biases):
+            biasex.append((b1 + b2) / 2)
+
+        self.weights = weightx
+        self.biases = biasex
 
 
     def feed_forward(self, ulaz):
@@ -60,32 +51,15 @@ class Model:
     def __init__(self, sloj, ulaz):
         self.sloj = sloj
         self.ulaz = ulaz
-        weights=[]
-        biases=[]
-
-        for i in range(len(sloj)):
-            var = ulaz
-            if (i > 0):
-                var = sloj[i-1]
-            
-            temp = []
-            
-            for j in range (var):
-                tempdublje = []
-                for k in range (sloj[i]):
-                    tempdublje.append(rng.normal(0, 1 / sqrt(var)))
-                temp.append(tempdublje)
-                
-            weights.append(temp)
-
-        for i in range(len(sloj)):
-            temp = []
-            for j in range (sloj[i]):
-                temp.append(0.0)
-            biases.append(temp)
-        #print(weights, '\n')
-        self.weights=[array(weight) for weight in weights]
-        self.biases=[array(bias) for bias in biases]
+        weights = []
+        biases = []
+        prev = ulaz
+        for size in sloj:
+            weights.append(rng.normal(0, 1/sqrt(prev), size=(prev, size)))
+            biases.append(zeros(size))
+            prev = size
+        self.weights = weights
+        self.biases = biases
 
     
 
