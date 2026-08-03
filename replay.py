@@ -5,7 +5,7 @@ from gym import Model
 
 
 weights_dir = Path(__file__).parent / "weights"
-files = sorted(weights_dir.glob("*.pkl"))
+files = sorted((*weights_dir.glob("*.pt"), *weights_dir.glob("*.pkl")))
 
 if len(sys.argv) == 1:
     for i, path in enumerate(files, 1):
@@ -23,4 +23,4 @@ except ValueError:
         raise SystemExit("Invalid choice")
 
 print(f"Replaying {path}")
-print(f"Score: {Model.load(path).eval_model('human')}")
+print(f"Score: {Model.load(path, 'cpu').eval_model('human')}")

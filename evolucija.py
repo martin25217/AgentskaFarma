@@ -16,10 +16,9 @@ print(r1, " ", r2, '\n')
 
 
 dijete = Model([kol,kol,kol,kol,kol,9], 33600)
-dijete.cross(x1,x2)
+dijete.cross(x1,x2,0.5)
 
 print(dijete.eval_model())
-
 
 
 

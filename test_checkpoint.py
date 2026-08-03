@@ -1,46 +1,26 @@
 import tempfile
 from pathlib import Path
 
-from numpy import array_equal
+import numpy as np
+import torch
 
-from gym import Model
+from gym import Model, Population
 
-kol = 3
-sloj = [kol, kol, kol, kol, kol, 9]
 
-x1 = Model(sloj, 33600)
-x2 = Model(sloj, 33600)
+layers = [4, 3]
+population = Population(6, layers, 5, "cpu")
+actions = population.actions(np.zeros((6, 5), dtype=np.uint8))
+assert actions.shape == (6,)
 
-dijete = Model(sloj, 33600)
-dijete.cross(x1, x2, 0.5)
-assert [w.shape for w in dijete.weights] == [w.shape for w in x1.weights]
-assert [b.shape for b in dijete.biases] == [b.shape for b in x1.biases]
-assert not any(w.dtype == object for w in dijete.weights), "mutacija vraca array umjesto broja"
+child = population.breed(np.arange(6), elite_count=1, tournament_size=3, sigma=0.5)
+assert all(torch.equal(a[0], b[5]) for a, b in zip(child.weights, population.weights))
+assert any(not torch.equal(a[1:], b[1:]) for a, b in zip(child.weights, population.weights))
 
-brat = Model(sloj, 33600)
-brat.cross(x1, x2, 0.5)
-assert not array_equal(brat.weights[0], dijete.weights[0]), "tezine se ne mutiraju"
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "best.pt"
+    population.best(5).save(path, score=42)
+    loaded = Model.load(path, "cpu")
 
-djeca = []
-for _ in range(5):
-    d = Model(sloj, 33600)
-    d.cross(x1, x2, 0.5)
-    djeca.append(d)
-assert any(b.any() for d in djeca for b in d.biases), "biasi se ne mutiraju"
-
-assert dijete.eval_model(seed=0) == dijete.eval_model(seed=0)
-
-with tempfile.TemporaryDirectory() as tmp:
-    path = Path(tmp) / "sub" / "test.pkl"
-    dijete.save(path)
-    ucitan = Model.load(path)
-
-assert ucitan.sloj == dijete.sloj and ucitan.ulaz == dijete.ulaz
-assert all(array_equal(a, b) for a, b in zip(ucitan.weights, dijete.weights))
-assert all(array_equal(a, b) for a, b in zip(ucitan.biases, dijete.biases))
-
-prvi = dijete.eval_model()
-drugi = ucitan.eval_model()
-print("score:", prvi, drugi)
-
+assert loaded.sloj == layers and loaded.ulaz == 5
+assert all(torch.equal(a, b[5]) for a, b in zip(loaded.weights, population.weights))
 print("OK")

@@ -1,54 +1,113 @@
-from gym import Model
-import random
-from datetime import datetime
+import argparse
+import os
+import time
 from pathlib import Path
 
-kol = 100
-velicina_populacije = 30
-elitizam = int(velicina_populacije * 0.1)
-broj_generacija = 100
-sigma = 0.5
-turnir_k = 3
-seedovi = [0, 1, 2]
-populacija= []
+import numpy as np
+import torch
+
+from gym import Model, Population, ThreadedEnvs, resolve_device
 
 
-def turnir(evaluacija):
-    return max(random.sample(evaluacija, turnir_k), key=lambda item: item[0])[1]
+def evaluate(population, envs, seeds):
+    total = np.zeros(population.count)
+    for seed in seeds:
+        observations = envs.reset(seed)
+        scores = np.zeros(population.count)
+        active = np.ones(population.count, dtype=bool)
+        while active.any():
+            actions = population.actions(observations)
+            for index, (observation, reward, terminated, truncated, _) in envs.step(actions, active).items():
+                observations[index] = observation
+                scores[index] += reward
+                active[index] = not (terminated or truncated)
+        total += scores
+    return total / len(seeds)
 
-run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-weights_dir = Path(__file__).parent / "weights"
 
-for i in range (velicina_populacije):
-    x = Model([kol,kol,kol,kol,kol,9], 33600)
-    populacija.append(x)
+def parse_args():
+    parser = argparse.ArgumentParser(description="Evolve a batched Ms. Pac-Man policy on PyTorch.")
+    parser.add_argument("--hours", type=float, default=8, help="maximum runtime (default: 8)")
+    parser.add_argument("--population", type=int, default=30)
+    parser.add_argument("--width", type=int, default=100)
+    parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--resume", type=Path)
+    parser.add_argument("--seed", type=int, nargs="+", default=[0, 1, 2])
+    parser.add_argument("--sigma", type=float, default=0.5)
+    parser.add_argument("--sigma-decay", type=float, default=0.995)
+    parser.add_argument("--min-sigma", type=float, default=0.02)
+    parser.add_argument("--mutation-rate", type=float, default=0.1)
+    parser.add_argument("--elite-fraction", type=float, default=0.1)
+    parser.add_argument("--tournament-size", type=int, default=3)
+    return parser.parse_args()
 
-for generacija in range(broj_generacija):
-    evaluacija = []
 
-    for model in populacija:
-        score = sum(model.eval_model(seed=s) for s in seedovi) / len(seedovi)
-        evaluacija.append([score, model])
+def main():
+    args = parse_args()
+    if not (
+        args.hours > 0
+        and args.population >= 2
+        and args.width >= 1
+        and args.workers >= 1
+        and args.seed
+        and args.sigma > 0
+        and 0 < args.sigma_decay <= 1
+        and 0 < args.min_sigma <= args.sigma
+        and 0 <= args.mutation_rate <= 1
+        and 0 < args.elite_fraction < 1
+        and args.tournament_size >= 2
+    ):
+        raise SystemExit("invalid training parameter; run with --help for the allowed ranges")
 
-    evaluacija.sort(key=lambda item: item[0], reverse= True)
+    device = resolve_device(args.device)
+    if device.type == "cuda":
+        torch.set_float32_matmul_precision("high")
+    torch.manual_seed(0)
+    resumed = Model.load(args.resume, device) if args.resume else None
+    layers = resumed.sloj if resumed else [args.width] * 5 + [9]
+    population = Population(args.population, layers, resumed.ulaz if resumed else 33600, device)
+    sigma = args.sigma
+    best_score = float("-inf")
+    generation = 0
+    if resumed:
+        population.inject(resumed)
+        sigma = float(resumed.metadata.get("sigma", sigma))
+        best_score = float(resumed.metadata.get("score", best_score))
+        generation = int(resumed.metadata.get("generation", -1)) + 1
 
-    najbolji_score, najbolji = evaluacija[0]
-    najbolji.save(weights_dir / f"{run_id}_gen_{generacija:03d}_score_{najbolji_score:g}.pkl")
+    elite_count = max(1, int(args.population * args.elite_fraction))
+    deadline = time.monotonic() + args.hours * 3600
+    checkpoint = Path(__file__).parent / "weights" / "best.pt"
+    envs = ThreadedEnvs(args.population, min(args.workers, args.population))
 
-    nova_populacija = []
+    print(f"device={device} population={args.population} workers={min(args.workers, args.population)}", flush=True)
+    try:
+        while time.monotonic() < deadline:
+            scores = evaluate(population, envs, args.seed)
+            best_index = int(scores.argmax())
+            generation_score = float(scores[best_index])
+            if generation_score > best_score:
+                best_score = generation_score
+                population.best(best_index).save(
+                    checkpoint, generation=generation, score=best_score, sigma=sigma
+                )
+                print(f"saved {checkpoint}", flush=True)
 
-    for idx in range(elitizam):
-        nova_populacija.append(evaluacija[idx][1])
-    
-    for i in range (velicina_populacije - elitizam):
-        p1=turnir(evaluacija)
-        p2=turnir(evaluacija)
+            print(
+                f"generation={generation} best={generation_score:g} all_time={best_score:g} sigma={sigma:.4f}",
+                flush=True,
+            )
+            population = population.breed(
+                scores, elite_count, args.tournament_size, sigma, args.mutation_rate
+            )
+            sigma = max(sigma * args.sigma_decay, args.min_sigma)
+            generation += 1
+    except KeyboardInterrupt:
+        print("stopped", flush=True)
+    finally:
+        envs.close()
 
-        dijete = Model([kol,kol,kol,kol,kol,9], 33600)
-        dijete.cross(p1,p2,sigma)
-        nova_populacija.append(dijete)
 
-    print(generacija, najbolji_score)
-    populacija = nova_populacija
-    
-    
+if __name__ == "__main__":
+    main()
