@@ -27,7 +27,7 @@ def evaluate(population, envs, seeds):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Evolve a batched Ms. Pac-Man policy on PyTorch.")
-    parser.add_argument("--hours", type=float, default=8, help="maximum runtime (default: 8)")
+    parser.add_argument("--hours", type=float, default=1, help="maximum runtime (default: 1)")
     parser.add_argument("--population", type=int, default=30)
     parser.add_argument("--width", type=int, default=100)
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
@@ -62,11 +62,11 @@ def main():
 
     device = resolve_device(args.device)
     if device.type == "cuda":
-        torch.set_float32_matmul_precision("high")
+        torch.backends.cudnn.benchmark = True
     torch.manual_seed(0)
     resumed = Model.load(args.resume, device) if args.resume else None
     layers = resumed.sloj if resumed else [args.width] * 5 + [9]
-    population = Population(args.population, layers, resumed.ulaz if resumed else 33600, device)
+    population = Population(args.population, layers, device)
     sigma = args.sigma
     best_score = float("-inf")
     generation = 0
