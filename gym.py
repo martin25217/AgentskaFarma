@@ -11,7 +11,7 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "human",repeat_action_probability=0.0)
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "rgb_array",repeat_action_probability=0.0)
 env = gym.wrappers.FlattenObservation(env)
 
 
@@ -59,20 +59,27 @@ class Model:
         self.weights = weights
         self.biases = biases
 
-    
-
+ 
     def eval_model(self):
-        #env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode=mode)
-        #env = gym.wrappers.FlattenObservation(env)
         obs, info = env.reset()
         poc = info["lives"]
         result = 0
+        prev_obs = obs.copy()
         while True:
-
             action = int(argmax(self.feed_forward(obs)))
             obs, reward, terminated, truncated, info = env.step(action)
+
+            if reward == 0:
+                reward-=1
+            if action == 0:
+                reward = -1000
+            if action != 0 and array_equal(obs, prev_obs):
+                reward = -1000
+            if reward > 100:
+               reward = 50
+
+            prev_obs = obs.copy()
             result = result + reward
-    
             if terminated or truncated or info["lives"] < poc:
                 break
         return result
