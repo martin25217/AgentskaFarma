@@ -28,6 +28,25 @@ assert all(
 )
 assert any(not torch.equal(a[1:], b[1:]) for a, b in zip(child.weights, population.weights))
 
+clones = population.breed(
+    np.arange(6), elite_count=1, tournament_size=3, sigma=0.5, mutation_rate=0
+)
+child_tensors = [*clones.conv_weights, *clones.conv_biases, *clones.weights, *clones.biases]
+parent_tensors = [
+    *population.conv_weights, *population.conv_biases, *population.weights, *population.biases
+]
+assert all(torch.equal(child[1], parent[5]) for child, parent in zip(child_tensors, parent_tensors))
+assert all(
+    any(
+        all(
+            torch.equal(child[index], parent[parent_index])
+            for child, parent in zip(child_tensors, parent_tensors)
+        )
+        for parent_index in range(population.count)
+    )
+    for index in range(1, population.count)
+)
+
 with tempfile.TemporaryDirectory() as directory:
     path = Path(directory) / "best.pt"
     population.best(5).save(path, score=42)

@@ -249,9 +249,10 @@ class Population:
         order = scores.argsort(descending=True)
         child_count = self.count - elite_count
 
-        candidates = torch.randint(self.count, (2, child_count, tournament_size), device=self.device)
-        winners = scores[candidates].argmax(2, keepdim=True)
-        parents = candidates.gather(2, winners).squeeze(2)
+        candidates = torch.randint(self.count, (child_count, tournament_size), device=self.device)
+        winners = scores[candidates].argmax(1, keepdim=True)
+        parents = candidates.gather(1, winners).squeeze(1)
+        parents[:elite_count] = order[:elite_count]
 
         child = Population.__new__(Population)
         child.count, child.sloj, child.device, child.dtype = self.count, self.sloj, self.device, self.dtype
@@ -278,8 +279,7 @@ class Population:
     def _breed_tensor(self, values, order, parents, elite_count, step, mutation_rate):
         result = torch.empty_like(values)
         result[:elite_count] = values[order[:elite_count]]
-        a, b = values[parents[0]], values[parents[1]]
-        offspring = torch.where(torch.rand_like(a) < 0.5, a, b)
+        offspring = values[parents].clone()
         offspring.add_((torch.rand_like(offspring) < mutation_rate) * torch.randn_like(offspring) * step)
         result[elite_count:] = offspring
         return result
