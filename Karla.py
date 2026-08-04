@@ -38,3 +38,18 @@ for episode in range(n_episodes):
         state = observation
         
 print(Q_table)
+play_env = gym.make("Taxi-v4", render_mode="human")
+
+state, _ = play_env.reset()
+done = False
+
+while not done:
+    action = np.argmax(Q_table[state])
+
+    state, reward, terminated, truncated, info = play_env.step(action)
+    done = terminated or truncated
+
+    import time
+    time.sleep(0.3)
+
+play_env.close()
