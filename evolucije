@@ -1,0 +1,194 @@
+import numpy as np
+
+class PacmanState:
+    def __init__(self):
+        pass
+
+    def get_state(self, info):
+        """
+        Prima informacije o trenutnoj igri
+        i vraća stanje za Q-tablicu
+        """
+
+        state = []
+
+        # -------------------
+        # PROSTOR OKO AGENTA
+        # -------------------
+
+        state.append(info["wall_up"])
+        state.append(info["wall_down"])
+        state.append(info["wall_left"])
+        state.append(info["wall_right"])
+
+
+        # -------------------
+        # PREDMETI
+        # -------------------
+
+        if info["pellet"]:
+            item = 1
+        elif info["power_pellet"]:
+            item = 2
+        elif info["fruit"]:
+            item = 3
+        else:
+            item = 0
+
+        state.append(item)
+
+
+        # -------------------
+        # DUHOVI
+        # -------------------
+
+        if info["ghost_distance"] < 3:
+            ghost = 1       # blizu
+        else:
+            ghost = 0
+
+        state.append(ghost)
+
+        state.append(info["ghost_direction"])
+        # 0 nema
+        # 1 gore
+        # 2 dolje
+        # 3 lijevo
+        # 4 desno
+
+
+        # -------------------
+        # STANJE AGENTA
+        # -------------------
+
+        state.append(info["direction"])
+        # 0 gore
+        # 1 dolje
+        # 2 lijevo
+        # 3 desno
+
+
+        state.append(info["power_mode"])
+        # 0 nema power
+        # 1 aktivan
+
+
+        # pretvori listu u tuple
+        # jer će biti ključ u Q-tablici
+        return tuple(state)
+    
+    import numpy as np
+from collections import defaultdict
+import random
+
+
+# -----------------------
+# AKCIJE AGENTA
+# -----------------------
+
+actions = {
+    0: "NOOP",
+    1: "FIRE",
+    2: "UP",
+    3: "RIGHT",
+    4: "LEFT",
+    5: "DOWN",
+    6: "UP_RIGHT",
+    7: "UP_LEFT",
+    8: "DOWN_RIGHT"
+}
+
+
+# -----------------------
+# PRAZNA Q TABLICA
+# -----------------------
+
+Q = defaultdict(lambda: np.zeros(len(actions)))
+
+
+# -----------------------
+# PARAMETRI UCENJA
+# -----------------------
+
+learning_rate = 0.1       # koliko brzo uči
+discount = 0.95           # važnost budućih nagrada
+epsilon = 1.0             # početno istraživanje
+epsilon_decay = 0.995
+min_epsilon = 0.01
+
+
+
+# -----------------------
+# ODABIR AKCIJE
+# -----------------------
+
+def choose_action(state):
+
+    # istraživanje - slučajni potez
+    if random.random() < epsilon:
+        return random.choice(list(actions.keys()))
+
+    # najbolji potez iz Q tablice
+    return np.argmax(Q[state])
+
+
+
+# -----------------------
+# AŽURIRANJE Q TABLICE
+# -----------------------
+
+def update_Q(state, action, reward, next_state):
+
+    old_value = Q[state][action]
+
+    best_future = np.max(Q[next_state])
+
+    new_value = old_value + learning_rate * (
+        reward + discount * best_future - old_value
+    )
+
+    Q[state][action] = new_value
+
+
+
+# -----------------------
+# TRENING PETLJA
+# -----------------------
+
+episodes = 10000
+
+
+for episode in range(episodes):
+
+    state = get_initial_state()   # početno stanje igre
+    done = False
+
+    while not done:
+
+        # agent bira potez
+        action = choose_action(state)
+
+
+        # izvrši potez u igri
+        next_state, reward, done = play_action(action)
+
+
+        # uči iz iskustva
+        update_Q(
+            state,
+            action,
+            reward,
+            next_state
+        )
+
+
+        state = next_state
+
+
+    # smanjujemo slučajnost kroz vrijeme
+    if epsilon > min_epsilon:
+        epsilon *= epsilon_decay
+
+
+
+print("Trening završen!")
