@@ -74,13 +74,13 @@ assert np.array_equal(
     ],
 )
 
-assert tracking_reward([80, 100], ball_y=80, ball_dx=1) > tracking_reward(
-    [100, 100], ball_y=80, ball_dx=1
+assert tracking_reward([80, 100], ball_x=150, ball_y=80, ball_dx=1) > tracking_reward(
+    [100, 100], ball_x=150, ball_y=80, ball_dx=1
 )
-assert tracking_reward([100, 80], ball_y=80, ball_dx=-1) > tracking_reward(
-    [100, 100], ball_y=80, ball_dx=-1
+assert tracking_reward([100, 80], ball_x=100, ball_y=80, ball_dx=-1) > tracking_reward(
+    [100, 100], ball_x=100, ball_y=80, ball_dx=-1
 )
-assert tracking_reward([80, 80], ball_y=80, ball_dx=0) == 0
+assert tracking_reward([80, 80], ball_x=100, ball_y=80, ball_dx=1) == 0
 
 child = population.breed(np.arange(6), elite_count=1, tournament_size=3, sigma=0.5)
 assert all(

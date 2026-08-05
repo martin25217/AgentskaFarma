@@ -11,7 +11,7 @@ from pettingzoo.atari import pong_v3
 
 MUTATION_RATE = 0.1
 PLAYERS = ("first_0", "second_0")
-PONG_ACTIONS = np.array((4, 5))  # fire/up, fire/down
+PONG_ACTIONS = np.array((1, 4, 5))  # fire/stay, fire/up, fire/down
 PLAYER_ACTION_COUNT = len(PONG_ACTIONS)
 ACTION_COUNT = len(PLAYERS) * PLAYER_ACTION_COUNT
 FRAME_STACK = 2
@@ -24,13 +24,17 @@ HIT_REWARD = 1
 MISS_PENALTY = 100
 PADDLE_RANGE = 165
 TRACKING_REWARD = 0.01
+MOVEMENT_PENALTY = 0.001
 
 
-def tracking_reward(paddles, ball_y, ball_dx):
-    """Small tie-breaker for keeping the receiving paddle near the ball."""
-    if not ball_dx:
+def tracking_reward(paddles, ball_x, ball_y, ball_dx):
+    """Small tie-breaker only when the ball is incoming on a paddle's half."""
+    if ball_dx > 0 and ball_x >= 128:
+        index = 0
+    elif ball_dx < 0 and ball_x < 128:
+        index = 1
+    else:
         return 0.0
-    index = 0 if ball_dx > 0 else 1
     return TRACKING_REWARD * max(
         0.0, 1 - abs(int(paddles[index]) - ball_y) / PADDLE_RANGE
     )
@@ -55,6 +59,7 @@ class ContinuousPong:
         state = observations[PLAYERS[0]]
         self.frames = np.repeat(state[None], FRAME_STACK, axis=0)
         self.ball_x, self.ball_dx = int(state[49]), 0
+        self.paddles = state[[51, 50]].astype(int)
         if self.render_mode == "human":
             self.env.render()
             pygame.display.set_caption("Pong cooperative replay")
@@ -79,7 +84,9 @@ class ContinuousPong:
                 abs(rewards[player]) for player in PLAYERS
             )
             paddles = ram[[51, 50]].astype(int)
-            score += tracking_reward(paddles, ball_y, dx if abs(dx) <= 4 else 0)
+            score += tracking_reward(paddles, ball_x, ball_y, dx if abs(dx) <= 4 else 0)
+            score -= MOVEMENT_PENALTY * np.count_nonzero(paddles != self.paddles)
+            self.paddles = paddles
             if dx:
                 self.ball_dx = dx if abs(dx) <= 4 else 0
             self.ball_x = ball_x
@@ -88,6 +95,7 @@ class ContinuousPong:
                 state = observations[PLAYERS[0]]
                 self.frames = np.repeat(state[None], FRAME_STACK, axis=0)
                 self.ball_x, self.ball_dx = int(state[49]), 0
+                self.paddles = state[[51, 50]].astype(int)
                 return self.frames.copy(), score, False, False, info
 
         self.frames[:-1] = self.frames[1:]
