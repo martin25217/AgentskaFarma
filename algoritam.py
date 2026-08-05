@@ -24,7 +24,7 @@ def evaluate(population, envs, seeds, steps):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Evolve a batched Pong policy on PyTorch.")
+    parser = argparse.ArgumentParser(description="Evolve a cooperative two-paddle Pong policy on PyTorch.")
     parser.add_argument("--hours", type=float, default=1, help="maximum runtime (default: 1)")
     parser.add_argument("--population", type=int, default=30)
     parser.add_argument("--width", type=int, default=100)
@@ -80,7 +80,7 @@ def main():
 
     elite_count = max(1, int(args.population * args.elite_fraction))
     deadline = time.monotonic() + args.hours * 3600
-    checkpoint = Path(__file__).parent / "weights" / "pong-selfplay-best.pt"
+    checkpoint = Path(__file__).parent / "weights" / "pong-coop-best.pt"
     envs = ThreadedEnvs(args.population, min(args.workers, args.population))
 
     print(
@@ -103,6 +103,9 @@ def main():
                 f"generation={generation} best={generation_score:g} all_time={best_score:g} sigma={sigma:.4f}",
                 flush=True,
             )
+            if best_score == 0:
+                print("perfect 0-point run; stopped", flush=True)
+                break
             population = population.breed(
                 scores, elite_count, args.tournament_size, sigma, args.mutation_rate
             )

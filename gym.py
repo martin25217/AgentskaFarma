@@ -4,6 +4,7 @@ from pathlib import Path
 
 import ale_py
 import numpy as np
+import pygame
 import torch
 import torch.nn.functional as F
 from pettingzoo.atari import pong_v3
@@ -25,6 +26,8 @@ RESIZE_COLUMNS = np.linspace(0, 159, FRAME_SIZE, dtype=int)
 
 class ContinuousPong:
     def __init__(self, render_mode=None):
+        self.render_mode = render_mode
+        self.clock = pygame.time.Clock() if render_mode == "human" else None
         self.env = pong_v3.parallel_env(
             num_players=2,
             obs_type="grayscale_image",
@@ -33,20 +36,30 @@ class ContinuousPong:
             auto_rom_install_path=Path(ale_py.__file__).parent,
             render_mode=render_mode,
         )
+        self.env.unwrapped.ale.setFloat(b"repeat_action_probability", 0.25)
 
     def reset(self, **kwargs):
         observations, info = self.env.reset(**kwargs)
         frame = self._frame(observations)
         self.frames = np.repeat(frame[None], FRAME_STACK, axis=0)
+        if self.render_mode == "human":
+            self.env.render()
+            pygame.display.set_caption("Pong cooperative replay")
         return self.frames.copy(), info
 
     def step(self, actions):
         score = 0
+        recent_frames = []
         for _ in range(FRAME_SKIP):
             observations, rewards, terminated, truncated, info = self.env.step(
                 dict(zip(PLAYERS, map(int, actions)))
             )
-            score += rewards[PLAYERS[0]]
+            if self.clock:
+                if any(event.type == pygame.QUIT for event in pygame.event.get()):
+                    raise SystemExit
+                self.clock.tick(60)
+            score -= sum(abs(rewards[player]) for player in PLAYERS)
+            recent_frames.append(self._frame(observations))
             if any(terminated.values()) or any(truncated.values()):
                 observations, info = self.env.reset()
                 frame = self._frame(observations)
@@ -54,7 +67,7 @@ class ContinuousPong:
                 return self.frames.copy(), score, False, False, info
 
         self.frames[:-1] = self.frames[1:]
-        self.frames[-1] = self._frame(observations)
+        self.frames[-1] = np.maximum(recent_frames[-2], recent_frames[-1])
         return self.frames.copy(), score, False, False, info
 
     def _frame(self, observations):
