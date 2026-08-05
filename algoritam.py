@@ -6,21 +6,19 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from gym import ACTION_COUNT, Model, Population, ThreadedEnvs, resolve_device
+from gym import ACTION_COUNT, ROLLOUT_STEPS, Model, Population, ThreadedEnvs, resolve_device
 
 
-def evaluate(population, envs, seeds):
+def evaluate(population, envs, seeds, steps):
     total = np.zeros(population.count)
     for seed in seeds:
         observations = envs.reset(seed)
         scores = np.zeros(population.count)
-        active = np.ones(population.count, dtype=bool)
-        while active.any():
+        for _ in range(steps):
             actions = population.actions(observations)
-            for index, (observation, reward, terminated, truncated, _) in envs.step(actions, active).items():
+            for index, (observation, reward, _, _, _) in envs.step(actions).items():
                 observations[index] = observation
                 scores[index] += reward
-                active[index] = not (terminated or truncated)
         total += scores
     return total / len(seeds)
 
@@ -30,6 +28,7 @@ def parse_args():
     parser.add_argument("--hours", type=float, default=1, help="maximum runtime (default: 1)")
     parser.add_argument("--population", type=int, default=30)
     parser.add_argument("--width", type=int, default=100)
+    parser.add_argument("--steps", type=int, default=ROLLOUT_STEPS, help="policy decisions per seed")
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--resume", type=Path)
@@ -49,6 +48,7 @@ def main():
         args.hours > 0
         and args.population >= 2
         and args.width >= 1
+        and args.steps >= 1
         and args.workers >= 1
         and args.seed
         and args.sigma > 0
@@ -65,6 +65,8 @@ def main():
         torch.backends.cudnn.benchmark = True
     torch.manual_seed(0)
     resumed = Model.load(args.resume, device) if args.resume else None
+    if resumed and resumed.sloj[-1] != ACTION_COUNT:
+        raise SystemExit("checkpoint is not a two-player Pong model")
     layers = resumed.sloj if resumed else [args.width] * 5 + [ACTION_COUNT]
     population = Population(args.population, layers, device)
     sigma = args.sigma
@@ -78,19 +80,22 @@ def main():
 
     elite_count = max(1, int(args.population * args.elite_fraction))
     deadline = time.monotonic() + args.hours * 3600
-    checkpoint = Path(__file__).parent / "weights" / "pong-best.pt"
+    checkpoint = Path(__file__).parent / "weights" / "pong-selfplay-best.pt"
     envs = ThreadedEnvs(args.population, min(args.workers, args.population))
 
-    print(f"device={device} population={args.population} workers={min(args.workers, args.population)}", flush=True)
+    print(
+        f"device={device} population={args.population} workers={min(args.workers, args.population)} steps={args.steps}",
+        flush=True,
+    )
     try:
         while time.monotonic() < deadline:
-            scores = evaluate(population, envs, args.seed)
+            scores = evaluate(population, envs, args.seed, args.steps)
             best_index = int(scores.argmax())
             generation_score = float(scores[best_index])
             if generation_score > best_score:
                 best_score = generation_score
                 population.best(best_index).save(
-                    checkpoint, generation=generation, score=best_score, sigma=sigma
+                    checkpoint, generation=generation, score=best_score, sigma=sigma, steps=args.steps
                 )
                 print(f"saved {checkpoint}", flush=True)
 

@@ -5,7 +5,7 @@ from gym import Model
 
 
 weights_dir = Path(__file__).parent / "weights"
-files = sorted(weights_dir.glob("pong-*.pt"))
+files = sorted(weights_dir.glob("pong-selfplay-*.pt"))
 
 if not files:
     raise SystemExit("No compatible .pt checkpoint found; train a model first")

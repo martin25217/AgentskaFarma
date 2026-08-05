@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from gym import ACTION_COUNT, FRAME_SIZE, FRAME_STACK, Model, Population, make_env
+from gym import ACTION_COUNT, FRAME_SIZE, FRAME_STACK, PLAYER_ACTION_COUNT, PLAYERS, Model, Population, make_env
 
 
 layers = [4, ACTION_COUNT]
@@ -13,10 +13,16 @@ observations = np.random.default_rng(0).integers(
     256, size=(6, FRAME_STACK, FRAME_SIZE, FRAME_SIZE), dtype=np.uint8
 )
 actions = population.actions(observations)
-assert actions.shape == (6,)
+assert actions.shape == (6, len(PLAYERS))
 assert np.array_equal(
     actions,
-    [int(population.best(i).feed_forward(observations[i]).argmax()) for i in range(population.count)],
+    [
+        population.best(i)
+        .feed_forward(observations[i])
+        .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
+        .argmax(1)
+        for i in range(population.count)
+    ],
 )
 
 child = population.breed(np.arange(6), elite_count=1, tournament_size=3, sigma=0.5)
@@ -60,7 +66,7 @@ env = make_env()
 try:
     observation, _ = env.reset(seed=0)
     assert observation.shape == (FRAME_STACK, FRAME_SIZE, FRAME_SIZE)
-    assert env.action_space.n == ACTION_COUNT
+    assert all(env.env.action_space(player).n == PLAYER_ACTION_COUNT for player in PLAYERS)
 finally:
     env.close()
 print("OK")

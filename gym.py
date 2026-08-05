@@ -3,42 +3,69 @@ from math import sqrt
 from pathlib import Path
 
 import ale_py
-import gymnasium as gym
 import numpy as np
 import torch
 import torch.nn.functional as F
+from pettingzoo.atari import pong_v3
 
 
-gym.register_envs(ale_py)
 MUTATION_RATE = 0.1
-ACTION_COUNT = 6
+PLAYERS = ("first_0", "second_0")
+PLAYER_ACTION_COUNT = 6
+ACTION_COUNT = len(PLAYERS) * PLAYER_ACTION_COUNT
 FRAME_STACK = 4
+FRAME_SKIP = 4
 FRAME_SIZE = 84
+ROLLOUT_STEPS = 10_000
 CONV_LAYERS = ((4, 8, 8, 4), (8, 16, 4, 2))
 DENSE_INPUT = 16 * 9 * 9
 RESIZE_ROWS = np.linspace(0, 209, FRAME_SIZE, dtype=int)[:, None]
 RESIZE_COLUMNS = np.linspace(0, 159, FRAME_SIZE, dtype=int)
 
 
-class ResizeObservation(gym.ObservationWrapper):
-    def __init__(self, env):
-        super().__init__(env)
-        self.observation_space = gym.spaces.Box(0, 255, (FRAME_SIZE, FRAME_SIZE), np.uint8)
+class ContinuousPong:
+    def __init__(self, render_mode=None):
+        self.env = pong_v3.parallel_env(
+            num_players=2,
+            obs_type="grayscale_image",
+            full_action_space=False,
+            max_cycles=100_000,
+            auto_rom_install_path=Path(ale_py.__file__).parent,
+            render_mode=render_mode,
+        )
 
-    def observation(self, observation):
-        return observation[RESIZE_ROWS, RESIZE_COLUMNS]
+    def reset(self, **kwargs):
+        observations, info = self.env.reset(**kwargs)
+        frame = self._frame(observations)
+        self.frames = np.repeat(frame[None], FRAME_STACK, axis=0)
+        return self.frames.copy(), info
+
+    def step(self, actions):
+        score = 0
+        for _ in range(FRAME_SKIP):
+            observations, rewards, terminated, truncated, info = self.env.step(
+                dict(zip(PLAYERS, map(int, actions)))
+            )
+            score += rewards[PLAYERS[0]]
+            if any(terminated.values()) or any(truncated.values()):
+                observations, info = self.env.reset()
+                frame = self._frame(observations)
+                self.frames = np.repeat(frame[None], FRAME_STACK, axis=0)
+                return self.frames.copy(), score, False, False, info
+
+        self.frames[:-1] = self.frames[1:]
+        self.frames[-1] = self._frame(observations)
+        return self.frames.copy(), score, False, False, info
+
+    def _frame(self, observations):
+        return observations[PLAYERS[0]][..., 0][RESIZE_ROWS, RESIZE_COLUMNS]
+
+    def close(self):
+        self.env.close()
 
 
 def make_env(render_mode=None):
-    env = gym.make(
-        "ALE/Pong-v5",
-        obs_type="grayscale",
-        render_mode=render_mode,
-        repeat_action_probability=0.0,
-        full_action_space=False,
-    )
-    env = ResizeObservation(env)
-    return gym.wrappers.FrameStackObservation(env, FRAME_STACK)
+    return ContinuousPong(render_mode)
 
 
 def resolve_device(device="auto"):
@@ -125,17 +152,22 @@ class Model:
             value = torch.tanh(value @ weights + biases)
         return value
 
-    def eval_model(self, render_mode=None, seed=None):
+    def eval_model(self, render_mode=None, seed=None, steps=ROLLOUT_STEPS):
         env = make_env(render_mode)
         try:
             observation, _ = env.reset(seed=seed)
             score = 0.0
-            while True:
-                action = int(self.feed_forward(observation).argmax().item())
-                observation, reward, terminated, truncated, _ = env.step(action)
+            for _ in range(steps):
+                actions = (
+                    self.feed_forward(observation)
+                    .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
+                    .argmax(1)
+                    .cpu()
+                    .numpy()
+                )
+                observation, reward, _, _, _ = env.step(actions)
                 score += reward
-                if terminated or truncated:
-                    return score
+            return score
         finally:
             env.close()
 
@@ -220,7 +252,12 @@ class Population:
             value = value.flatten(1)
             for weights, biases in zip(self.weights, self.biases):
                 value = torch.tanh(torch.bmm(value.unsqueeze(1), weights).squeeze(1) + biases)
-        return value.argmax(1).cpu().numpy()
+        return (
+            value.reshape(self.count, len(PLAYERS), PLAYER_ACTION_COUNT)
+            .argmax(2)
+            .cpu()
+            .numpy()
+        )
 
     def best(self, index):
         return Model.from_tensors(
@@ -291,10 +328,10 @@ class ThreadedEnvs:
         futures = [self.pool.submit(env.reset, seed=seed) for env in self.envs]
         return np.stack([future.result()[0] for future in futures])
 
-    def step(self, actions, active):
+    def step(self, actions):
         futures = {
-            index: self.pool.submit(self.envs[index].step, int(actions[index]))
-            for index in np.flatnonzero(active)
+            index: self.pool.submit(env.step, actions[index])
+            for index, env in enumerate(self.envs)
         }
         return {index: future.result() for index, future in futures.items()}
 
