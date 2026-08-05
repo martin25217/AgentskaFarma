@@ -18,7 +18,8 @@ FRAME_SKIP = 4
 RAM_SIZE = 128
 INPUT_SIZE = FRAME_STACK * RAM_SIZE
 ROLLOUT_STEPS = 1_000
-POINT_PENALTY = 10
+FLAT_HIT_PENALTY = 2
+MISS_PENALTY = 50
 
 
 class ContinuousPong:
@@ -39,13 +40,14 @@ class ContinuousPong:
         observations, info = self.env.reset(**kwargs)
         state = observations[PLAYERS[0]]
         self.frames = np.repeat(state[None], FRAME_STACK, axis=0)
+        self.ball_x, self.ball_y, self.ball_dx = int(state[49]), int(state[54]), 0
         if self.render_mode == "human":
             self.env.render()
-            pygame.display.set_caption("Pong cooperative replay")
+            pygame.display.set_caption("Pong competitive replay")
         return self.frames.copy(), info
 
     def step(self, actions):
-        score = 0
+        score = np.zeros(len(PLAYERS))
         for _ in range(FRAME_SKIP):
             observations, rewards, terminated, truncated, info = self.env.step(
                 dict(zip(PLAYERS, map(int, actions)))
@@ -54,21 +56,27 @@ class ContinuousPong:
                 if any(event.type == pygame.QUIT for event in pygame.event.get()):
                     raise SystemExit
                 self.clock.tick(60)
-            score -= not self._ball_in_play(observations)
-            score -= POINT_PENALTY * sum(abs(rewards[player]) for player in PLAYERS)
+            ram = observations[PLAYERS[0]]
+            ball_x, ball_y = int(ram[49]), int(ram[54])
+            dx, dy = ball_x - self.ball_x, ball_y - self.ball_y
+            if dx and self.ball_dx and dx * self.ball_dx < 0 and abs(dx) <= 4:
+                score[0 if ball_x > 128 else 1] += abs(dy) - FLAT_HIT_PENALTY
+            score += MISS_PENALTY * np.minimum(
+                [rewards[player] for player in PLAYERS], 0
+            )
+            if dx:
+                self.ball_dx = dx if abs(dx) <= 4 else 0
+            self.ball_x, self.ball_y = ball_x, ball_y
             if any(terminated.values()) or any(truncated.values()):
                 observations, info = self.env.reset()
                 state = observations[PLAYERS[0]]
                 self.frames = np.repeat(state[None], FRAME_STACK, axis=0)
+                self.ball_x, self.ball_y, self.ball_dx = int(state[49]), int(state[54]), 0
                 return self.frames.copy(), score, False, False, info
 
         self.frames[:-1] = self.frames[1:]
         self.frames[-1] = observations[PLAYERS[0]]
         return self.frames.copy(), score, False, False, info
-
-    def _ball_in_play(self, observations):
-        ram = observations[PLAYERS[0]]
-        return ram[54] != 0 and ram[49] > 49
 
     def close(self):
         self.env.close()
@@ -135,7 +143,7 @@ class Model:
         env = make_env(render_mode)
         try:
             observation, _ = env.reset(seed=seed)
-            score = 0.0
+            score = np.zeros(len(PLAYERS))
             for _ in range(steps):
                 actions = (
                     self.feed_forward(observation)
@@ -197,14 +205,17 @@ class Population:
         ]
         self.biases = [torch.zeros(count, size, device=self.device, dtype=self.dtype) for size in sloj]
 
-    def actions(self, observations):
+    def actions(self, observations, indices=None):
         value = torch.as_tensor(observations, dtype=self.dtype, device=self.device).flatten(1)
         value = value / 127.5 - 1
+        indices = torch.as_tensor(indices, device=self.device) if indices is not None else None
         with torch.inference_mode():
             for weights, biases in zip(self.weights, self.biases):
+                if indices is not None:
+                    weights, biases = weights[indices], biases[indices]
                 value = torch.tanh(torch.bmm(value.unsqueeze(1), weights).squeeze(1) + biases)
         return (
-            value.reshape(self.count, len(PLAYERS), PLAYER_ACTION_COUNT)
+            value.reshape(len(observations), len(PLAYERS), PLAYER_ACTION_COUNT)
             .argmax(2)
             .cpu()
             .numpy()
@@ -223,7 +234,7 @@ class Population:
             [*self.weights, *self.biases],
             [*model.weights, *model.biases],
         ):
-            target[0].copy_(source.to(self.device))
+            target.copy_(source.to(self.device))
 
     def breed(self, scores, elite_count, tournament_size, sigma, mutation_rate=MUTATION_RATE):
         scores = torch.as_tensor(scores, dtype=torch.float32, device=self.device)

@@ -24,6 +24,18 @@ assert np.array_equal(
         for i in range(population.count)
     ],
 )
+opponents = np.roll(np.arange(population.count), 1)
+opponent_actions = population.actions(observations, opponents)
+assert np.array_equal(
+    opponent_actions,
+    [
+        population.best(opponents[i])
+        .feed_forward(observations[i])
+        .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
+        .argmax(1)
+        for i in range(population.count)
+    ],
+)
 
 child = population.breed(np.arange(6), elite_count=1, tournament_size=3, sigma=0.5)
 assert all(
@@ -56,12 +68,17 @@ with tempfile.TemporaryDirectory() as directory:
 
 assert loaded.sloj == layers
 assert all(torch.equal(a, b[5]) for a, b in zip(loaded.weights, population.weights))
+resumed = Population(6, layers, "cpu")
+resumed.inject(loaded)
+assert all(torch.equal(row, source[5].expand_as(row)) for row, source in zip(resumed.weights, population.weights))
 
 env = make_env()
 try:
     observation, _ = env.reset(seed=0)
     assert observation.shape == (FRAME_STACK, RAM_SIZE)
     assert all(env.env.action_space(player).n == PLAYER_ACTION_COUNT for player in PLAYERS)
+    _, rewards, _, _, _ = env.step([0, 0])
+    assert rewards.shape == (len(PLAYERS),)
 finally:
     env.close()
 print("OK")
