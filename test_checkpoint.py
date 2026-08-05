@@ -4,10 +4,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from gym import FRAME_SIZE, FRAME_STACK, Model, Population, make_env
+from gym import ACTION_COUNT, FRAME_SIZE, FRAME_STACK, Model, Population, make_env
 
 
-layers = [4, 3]
+layers = [4, ACTION_COUNT]
 population = Population(6, layers, "cpu")
 observations = np.random.default_rng(0).integers(
     256, size=(6, FRAME_STACK, FRAME_SIZE, FRAME_SIZE), dtype=np.uint8
@@ -60,6 +60,7 @@ env = make_env()
 try:
     observation, _ = env.reset(seed=0)
     assert observation.shape == (FRAME_STACK, FRAME_SIZE, FRAME_SIZE)
+    assert env.action_space.n == ACTION_COUNT
 finally:
     env.close()
 print("OK")

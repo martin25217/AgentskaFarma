@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from gym import Model, Population, ThreadedEnvs, resolve_device
+from gym import ACTION_COUNT, Model, Population, ThreadedEnvs, resolve_device
 
 
 def evaluate(population, envs, seeds):
@@ -26,7 +26,7 @@ def evaluate(population, envs, seeds):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Evolve a batched Ms. Pac-Man policy on PyTorch.")
+    parser = argparse.ArgumentParser(description="Evolve a batched Pong policy on PyTorch.")
     parser.add_argument("--hours", type=float, default=1, help="maximum runtime (default: 1)")
     parser.add_argument("--population", type=int, default=30)
     parser.add_argument("--width", type=int, default=100)
@@ -65,7 +65,7 @@ def main():
         torch.backends.cudnn.benchmark = True
     torch.manual_seed(0)
     resumed = Model.load(args.resume, device) if args.resume else None
-    layers = resumed.sloj if resumed else [args.width] * 5 + [9]
+    layers = resumed.sloj if resumed else [args.width] * 5 + [ACTION_COUNT]
     population = Population(args.population, layers, device)
     sigma = args.sigma
     best_score = float("-inf")
@@ -78,7 +78,7 @@ def main():
 
     elite_count = max(1, int(args.population * args.elite_fraction))
     deadline = time.monotonic() + args.hours * 3600
-    checkpoint = Path(__file__).parent / "weights" / "best.pt"
+    checkpoint = Path(__file__).parent / "weights" / "pong-best.pt"
     envs = ThreadedEnvs(args.population, min(args.workers, args.population))
 
     print(f"device={device} population={args.population} workers={min(args.workers, args.population)}", flush=True)

@@ -11,24 +11,13 @@ import torch.nn.functional as F
 
 gym.register_envs(ale_py)
 MUTATION_RATE = 0.1
+ACTION_COUNT = 6
 FRAME_STACK = 4
 FRAME_SIZE = 84
 CONV_LAYERS = ((4, 8, 8, 4), (8, 16, 4, 2))
 DENSE_INPUT = 16 * 9 * 9
 RESIZE_ROWS = np.linspace(0, 209, FRAME_SIZE, dtype=int)[:, None]
 RESIZE_COLUMNS = np.linspace(0, 159, FRAME_SIZE, dtype=int)
-
-
-class LoseLifeEndsRun(gym.Wrapper):
-    def reset(self, **kwargs):
-        observation, info = self.env.reset(**kwargs)
-        self.lives = info["lives"]
-        return observation, info
-
-    def step(self, action):
-        observation, reward, terminated, truncated, info = self.env.step(action)
-        terminated = terminated or info["lives"] < self.lives
-        return observation, reward, terminated, truncated, info
 
 
 class ResizeObservation(gym.ObservationWrapper):
@@ -42,13 +31,13 @@ class ResizeObservation(gym.ObservationWrapper):
 
 def make_env(render_mode=None):
     env = gym.make(
-        "ALE/MsPacman-v5",
+        "ALE/Pong-v5",
         obs_type="grayscale",
         render_mode=render_mode,
         repeat_action_probability=0.0,
         full_action_space=False,
     )
-    env = ResizeObservation(LoseLifeEndsRun(env))
+    env = ResizeObservation(env)
     return gym.wrappers.FrameStackObservation(env, FRAME_STACK)
 
 
