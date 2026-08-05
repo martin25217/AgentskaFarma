@@ -4,8 +4,37 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from gym import ACTION_COUNT, FRAME_STACK, PLAYER_ACTION_COUNT, PLAYERS, RAM_SIZE, Model, Population, make_env
+from algoritam import evaluate
+from gym import (
+    ACTION_COUNT,
+    FRAME_STACK,
+    PLAYER_ACTION_COUNT,
+    PLAYERS,
+    PONG_ACTIONS,
+    RAM_SIZE,
+    Model,
+    Population,
+    make_env,
+    tracking_reward,
+)
 
+
+class EvaluationStub:
+    count = 2
+
+    def actions(self, observations):
+        return np.zeros((len(observations), len(PLAYERS)), dtype=int)
+
+
+class EnvStub:
+    def reset(self, seed):
+        return np.zeros((2, 1))
+
+    def step(self, actions):
+        return {index: (np.zeros(1), float(index + 1), False, False, {}) for index in range(2)}
+
+
+assert np.array_equal(evaluate(EvaluationStub(), EnvStub(), [0], 3), [3, 6])
 
 layers = [4, ACTION_COUNT]
 population = Population(6, layers, "cpu")
@@ -17,10 +46,14 @@ assert actions.shape == (6, len(PLAYERS))
 assert np.array_equal(
     actions,
     [
-        population.best(i)
-        .feed_forward(observations[i])
-        .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
-        .argmax(1)
+        PONG_ACTIONS[
+            population.best(i)
+            .feed_forward(observations[i])
+            .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
+            .argmax(1)
+            .cpu()
+            .numpy()
+        ]
         for i in range(population.count)
     ],
 )
@@ -29,13 +62,25 @@ opponent_actions = population.actions(observations, opponents)
 assert np.array_equal(
     opponent_actions,
     [
-        population.best(opponents[i])
-        .feed_forward(observations[i])
-        .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
-        .argmax(1)
+        PONG_ACTIONS[
+            population.best(opponents[i])
+            .feed_forward(observations[i])
+            .reshape(len(PLAYERS), PLAYER_ACTION_COUNT)
+            .argmax(1)
+            .cpu()
+            .numpy()
+        ]
         for i in range(population.count)
     ],
 )
+
+assert tracking_reward([80, 100], ball_y=80, ball_dx=1) > tracking_reward(
+    [100, 100], ball_y=80, ball_dx=1
+)
+assert tracking_reward([100, 80], ball_y=80, ball_dx=-1) > tracking_reward(
+    [100, 100], ball_y=80, ball_dx=-1
+)
+assert tracking_reward([80, 80], ball_y=80, ball_dx=0) == 0
 
 child = population.breed(np.arange(6), elite_count=1, tournament_size=3, sigma=0.5)
 assert all(
@@ -76,9 +121,9 @@ env = make_env()
 try:
     observation, _ = env.reset(seed=0)
     assert observation.shape == (FRAME_STACK, RAM_SIZE)
-    assert all(env.env.action_space(player).n == PLAYER_ACTION_COUNT for player in PLAYERS)
-    _, rewards, _, _, _ = env.step([0, 0])
-    assert rewards.shape == (len(PLAYERS),)
+    assert all(max(PONG_ACTIONS) < env.env.action_space(player).n for player in PLAYERS)
+    _, reward, _, _, _ = env.step([PONG_ACTIONS[0]] * len(PLAYERS))
+    assert isinstance(reward, float)
 finally:
     env.close()
 print("OK")

@@ -11,25 +11,20 @@ from gym import ACTION_COUNT, ROLLOUT_STEPS, Model, Population, ThreadedEnvs, re
 
 def evaluate(population, envs, seeds, steps):
     total = np.zeros(population.count)
-    indices = np.arange(population.count)
-    for seed_index, seed in enumerate(seeds):
-        opponents = np.roll(indices, seed_index % (population.count - 1) + 1)
+    for seed in seeds:
         observations = envs.reset(seed)
         scores = np.zeros(population.count)
         for _ in range(steps):
-            own_actions = population.actions(observations)
-            opponent_actions = population.actions(observations, opponents)
-            actions = np.column_stack((own_actions[:, 0], opponent_actions[:, 1]))
-            for index, (observation, rewards, _, _, _) in envs.step(actions).items():
+            actions = population.actions(observations)
+            for index, (observation, reward, _, _, _) in envs.step(actions).items():
                 observations[index] = observation
-                scores[index] += rewards[0]
-                scores[opponents[index]] += rewards[1]
-        total += scores / 2
+                scores[index] += reward
+        total += scores
     return total / len(seeds)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Coevolve competitive two-player Pong RAM policies.")
+    parser = argparse.ArgumentParser(description="Evolve a cooperative two-paddle Pong RAM policy.")
     parser.add_argument("--hours", type=float, default=1, help="maximum runtime (default: 1)")
     parser.add_argument("--population", type=int, default=30)
     parser.add_argument("--width", type=int, default=32)
@@ -73,15 +68,17 @@ def main():
     layers = resumed.sloj if resumed else [args.width] * 2 + [ACTION_COUNT]
     population = Population(args.population, layers, device)
     sigma = args.sigma
+    best_score = float("-inf")
     generation = 0
     if resumed:
         population.inject(resumed)
         sigma = float(resumed.metadata.get("sigma", sigma))
+        best_score = float(resumed.metadata.get("score", best_score))
         generation = int(resumed.metadata.get("generation", -1)) + 1
 
     elite_count = max(1, int(args.population * args.elite_fraction))
     deadline = time.monotonic() + args.hours * 3600
-    checkpoint = Path(__file__).parent / "weights" / "pong-ram-versus-best.pt"
+    checkpoint = Path(__file__).parent / "weights" / "pong-ram-coop-best.pt"
     envs = ThreadedEnvs(args.population, min(args.workers, args.population))
 
     print(
@@ -93,13 +90,16 @@ def main():
             scores = evaluate(population, envs, args.seed, args.steps)
             best_index = int(scores.argmax())
             generation_score = float(scores[best_index])
-            population.best(best_index).save(
-                checkpoint, generation=generation, score=generation_score, sigma=sigma, steps=args.steps
-            )
-            print(f"saved {checkpoint}", flush=True)
+            if generation_score > best_score:
+                best_score = generation_score
+                population.best(best_index).save(
+                    checkpoint, generation=generation, score=best_score, sigma=sigma, steps=args.steps
+                )
+                print(f"saved {checkpoint}", flush=True)
 
             print(
-                f"generation={generation} best={generation_score:g} sigma={sigma:.4f}",
+                f"generation={generation} best_fitness={generation_score:g} "
+                f"all_time={best_score:g} sigma={sigma:.4f}",
                 flush=True,
             )
             population = population.breed(

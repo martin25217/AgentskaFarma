@@ -11,15 +11,29 @@ from pettingzoo.atari import pong_v3
 
 MUTATION_RATE = 0.1
 PLAYERS = ("first_0", "second_0")
-PLAYER_ACTION_COUNT = 6
+PONG_ACTIONS = np.array((4, 5))  # fire/up, fire/down
+PLAYER_ACTION_COUNT = len(PONG_ACTIONS)
 ACTION_COUNT = len(PLAYERS) * PLAYER_ACTION_COUNT
 FRAME_STACK = 2
 FRAME_SKIP = 4
 RAM_SIZE = 128
-INPUT_SIZE = FRAME_STACK * RAM_SIZE
+RAM_INDICES = (49, 50, 51, 54)  # ball x, left paddle y, right paddle y, ball y
+INPUT_SIZE = FRAME_STACK * len(RAM_INDICES)
 ROLLOUT_STEPS = 1_000
-FLAT_HIT_PENALTY = 2
-MISS_PENALTY = 50
+HIT_REWARD = 1
+MISS_PENALTY = 100
+PADDLE_RANGE = 165
+TRACKING_REWARD = 0.01
+
+
+def tracking_reward(paddles, ball_y, ball_dx):
+    """Small tie-breaker for keeping the receiving paddle near the ball."""
+    if not ball_dx:
+        return 0.0
+    index = 0 if ball_dx > 0 else 1
+    return TRACKING_REWARD * max(
+        0.0, 1 - abs(int(paddles[index]) - ball_y) / PADDLE_RANGE
+    )
 
 
 class ContinuousPong:
@@ -40,14 +54,14 @@ class ContinuousPong:
         observations, info = self.env.reset(**kwargs)
         state = observations[PLAYERS[0]]
         self.frames = np.repeat(state[None], FRAME_STACK, axis=0)
-        self.ball_x, self.ball_y, self.ball_dx = int(state[49]), int(state[54]), 0
+        self.ball_x, self.ball_dx = int(state[49]), 0
         if self.render_mode == "human":
             self.env.render()
-            pygame.display.set_caption("Pong competitive replay")
+            pygame.display.set_caption("Pong cooperative replay")
         return self.frames.copy(), info
 
     def step(self, actions):
-        score = np.zeros(len(PLAYERS))
+        score = 0.0
         for _ in range(FRAME_SKIP):
             observations, rewards, terminated, truncated, info = self.env.step(
                 dict(zip(PLAYERS, map(int, actions)))
@@ -58,20 +72,22 @@ class ContinuousPong:
                 self.clock.tick(60)
             ram = observations[PLAYERS[0]]
             ball_x, ball_y = int(ram[49]), int(ram[54])
-            dx, dy = ball_x - self.ball_x, ball_y - self.ball_y
+            dx = ball_x - self.ball_x
             if dx and self.ball_dx and dx * self.ball_dx < 0 and abs(dx) <= 4:
-                score[0 if ball_x > 128 else 1] += abs(dy) - FLAT_HIT_PENALTY
-            score += MISS_PENALTY * np.minimum(
-                [rewards[player] for player in PLAYERS], 0
+                score += HIT_REWARD
+            score -= MISS_PENALTY * max(
+                abs(rewards[player]) for player in PLAYERS
             )
+            paddles = ram[[51, 50]].astype(int)
+            score += tracking_reward(paddles, ball_y, dx if abs(dx) <= 4 else 0)
             if dx:
                 self.ball_dx = dx if abs(dx) <= 4 else 0
-            self.ball_x, self.ball_y = ball_x, ball_y
+            self.ball_x = ball_x
             if any(terminated.values()) or any(truncated.values()):
                 observations, info = self.env.reset()
                 state = observations[PLAYERS[0]]
                 self.frames = np.repeat(state[None], FRAME_STACK, axis=0)
-                self.ball_x, self.ball_y, self.ball_dx = int(state[49]), int(state[54]), 0
+                self.ball_x, self.ball_dx = int(state[49]), 0
                 return self.frames.copy(), score, False, False, info
 
         self.frames[:-1] = self.frames[1:]
@@ -133,7 +149,9 @@ class Model:
 
     @torch.inference_mode()
     def feed_forward(self, observation):
-        value = torch.as_tensor(observation, dtype=self.dtype, device=self.device).flatten()
+        value = torch.as_tensor(observation, dtype=self.dtype, device=self.device)[
+            ..., RAM_INDICES
+        ].flatten()
         value = value / 127.5 - 1
         for weights, biases in zip(self.weights, self.biases):
             value = torch.tanh(value @ weights + biases)
@@ -143,7 +161,7 @@ class Model:
         env = make_env(render_mode)
         try:
             observation, _ = env.reset(seed=seed)
-            score = np.zeros(len(PLAYERS))
+            score = 0.0
             for _ in range(steps):
                 actions = (
                     self.feed_forward(observation)
@@ -152,6 +170,7 @@ class Model:
                     .cpu()
                     .numpy()
                 )
+                actions = PONG_ACTIONS[actions]
                 observation, reward, _, _, _ = env.step(actions)
                 score += reward
             return score
@@ -206,7 +225,9 @@ class Population:
         self.biases = [torch.zeros(count, size, device=self.device, dtype=self.dtype) for size in sloj]
 
     def actions(self, observations, indices=None):
-        value = torch.as_tensor(observations, dtype=self.dtype, device=self.device).flatten(1)
+        value = torch.as_tensor(observations, dtype=self.dtype, device=self.device)[
+            ..., RAM_INDICES
+        ].flatten(1)
         value = value / 127.5 - 1
         indices = torch.as_tensor(indices, device=self.device) if indices is not None else None
         with torch.inference_mode():
@@ -214,12 +235,13 @@ class Population:
                 if indices is not None:
                     weights, biases = weights[indices], biases[indices]
                 value = torch.tanh(torch.bmm(value.unsqueeze(1), weights).squeeze(1) + biases)
-        return (
+        actions = (
             value.reshape(len(observations), len(PLAYERS), PLAYER_ACTION_COUNT)
             .argmax(2)
             .cpu()
             .numpy()
         )
+        return PONG_ACTIONS[actions]
 
     def best(self, index):
         return Model.from_tensors(

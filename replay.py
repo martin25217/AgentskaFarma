@@ -1,11 +1,15 @@
 import sys
 from pathlib import Path
 
-from gym import Model
+from gym import ACTION_COUNT, Model
 
 
 weights_dir = Path(__file__).parent / "weights"
-files = sorted(weights_dir.glob("pong-ram-versus-*.pt"))
+files = [
+    path
+    for path in sorted(weights_dir.glob("pong-ram-*.pt"))
+    if Model.load(path, "cpu").sloj[-1] == ACTION_COUNT
+]
 
 if not files:
     raise SystemExit("No compatible .pt checkpoint found; train a model first")
@@ -26,4 +30,4 @@ except ValueError:
         raise SystemExit("Invalid choice")
 
 print(f"Replaying {path}")
-print(f"Score: {Model.load(path).eval_model('human')}")
+print(f"Fitness: {Model.load(path).eval_model('human')}")
