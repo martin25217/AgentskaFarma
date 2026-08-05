@@ -8,7 +8,9 @@ import numpy as np
 import random
 import pickle as pc
 import time
-  
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 
 gym.register_envs(ale_py)
 ENTITY_NAMES = ("pacman", "orange", "cyan", "pink", "red", "fruit")
@@ -109,12 +111,10 @@ def make_coordinate_env(render_mode=None):
     return CoordinateObservation(LoseLifeEndsRun(env))
 
 def visualize(seed=0, output=None):
-    import matplotlib.pyplot as plt
-    from matplotlib.animation import FuncAnimation
-
+    
     env = make_coordinate_env("rgb_array")
     observation, _ = env.reset(seed=seed)
-    figure, (axis, coordinate_axis) = plt.subplots1( 2, figsize=(8, 6), gridspec_kw={"width_ratios": (2, 1)})
+    figure, (axis, coordinate_axis) = plt.subplots( 2, figsize=(8, 6), gridspec_kw={"width_ratios": (2, 1)})
     image = axis.imshow(env.render())
     visible = observation.copy()
     visible[(visible < 0).any(axis=1)] = np.nan
@@ -224,7 +224,7 @@ def run_genetic():
     populacija = []
     maxi = -10000000
 
-    for i in range(velicina_populacije):
+    for _ in range(velicina_populacije):
         x = Model([kol, int(kol/2), 30, 30, 20, 9], 33600)
         populacija.append(x)
 
@@ -252,7 +252,7 @@ def run_genetic():
         for idx in range(elitizam):
             nova_populacija.append(evaluacija[idx][1])
 
-        for i in range(velicina_populacije - elitizam):
+        for _ in range(velicina_populacije - elitizam):
             p1 = random.choice(evaluacija[:int(velicina_populacije/3)])[1]
             p2 = random.choice(evaluacija[:int(velicina_populacije/3)])[1]
 
@@ -263,22 +263,21 @@ def run_genetic():
         populacija = nova_populacija
         sigma *= 0.995
         sigma = max(sigma, 0.02)
-        if __name__ == "__main__":
-            parser = argparse.ArgumentParser(description="Ms. Pac-Man evolution or visualization.")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Ms. Pac-Man evolution or visualization.")
+    parser.add_argument("--check", action="store_true", help="Run check on environment")
+    parser.add_argument("--seed", type=int, default=0, help="Seed for visualization")
+    parser.add_argument("--save", type=Path, metavar="FILE", help="Save visualization as GIF")
     
-            parser.add_argument("--check", action="store_true", help="Run check on environment")
-            parser.add_argument("--seed", type=int, default=0, help="Seed for visualization")
-            parser.add_argument("--save", type=Path, metavar="FILE", help="Save visualization as GIF")
-    
-            parser.add_argument("--genetic", action="store_true", help="Run genetic algorithm instead of visualization")
-            args = parser.parse_args()
+    parser.add_argument("--genetic", action="store_true", help="Run genetic algorithm instead of visualization")
+    args = parser.parse_args()
 
-        if args.genetic:
-            run_genetic()
+    if args.genetic:
+        run_genetic()
+    else:
+        if args.check:
+            check()
         else:
-            if args.check:
-                check()
-            else:
-                visualize(args.seed, args.save)
+            visualize(args.seed, args.save)
 
 

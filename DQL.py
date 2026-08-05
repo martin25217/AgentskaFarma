@@ -1,0 +1,186 @@
+"""
+DQN Training and Demo Script for MountainCar-v0
+------------------------------------------------
+Train or test a Deep Q-Learning agent using Stable Baselines3 (SB3).
+TRAINING:
+    python dqn_mountaincar.py --train --lr 1e-5 --timesteps 250000    -> low
+    python dqn_mountaincar.py --train --lr 5e-4 --timesteps 250000    -> medium
+    python dqn_mountaincar.py --train --lr 5e-3 --timesteps 250000    -> high
+ 
+DEMO:
+    python dqn_mountaincar.py --demo --model DQN_MountainCar_lr-0.0001_seed-3_20250114-154530_250000steps.zip
+ 
+Author: Calin Dragos George
+Created: 15 November 2025
+"""
+import argparse
+import os
+import time
+import gymnasium as gym
+import numpy as np
+import torch
+ 
+from stable_baselines3 import DQN
+from stable_baselines3.common.monitor import Monitor
+ 
+# ---------------------------------------------------------
+# Utility: Set seeds for full reproducibility
+# ---------------------------------------------------------
+def set_seed(seed):
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+ 
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+ 
+ 
+# ---------------------------------------------------------
+# Environment Creator
+# ---------------------------------------------------------
+def make_env():
+    env = gym.make("ALE/MsPacman-v5")
+    env = Monitor(env)
+    return env
+ 
+ 
+# ---------------------------------------------------------
+# Create DQN Model with dynamic learning rate
+# ---------------------------------------------------------
+def create_model(env, lr, log_dir):
+ 
+    model = DQN(
+        "MlpPolicy",
+        env,
+        learning_rate=lr,
+        buffer_size=5000,
+        learning_starts=1000,
+        batch_size=16,
+        tau=1.0,
+        gamma=0.99,
+        train_freq=1,
+        gradient_steps=1,
+        target_update_interval=1000,
+        exploration_fraction=0.3,
+        exploration_final_eps=0.05,
+        verbose=1,
+        tensorboard_log=log_dir,
+    )
+ 
+ 
+    # Log hyperparameters
+    model.logger.record("hyperparams/learning_rate", lr)
+    model.logger.record("hyperparams/gamma", 0.99)
+    model.logger.record("hyperparams/exploration_fraction", 0.3)
+ 
+    return model
+ 
+ 
+# ---------------------------------------------------------
+# Train DQN
+# ---------------------------------------------------------
+def train_dqn(lr, timesteps, seed):
+ 
+    set_seed(seed)
+ 
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+ 
+    # log directory unique for each run
+    log_dir = f"DQN/logs/DQN_lr_{lr}_seed_{seed}_{timestamp}"
+    os.makedirs(log_dir, exist_ok=True)
+ 
+    env = make_env()
+ 
+    print("\n Training DQN on MountainCar-v0")
+    print(f" Learning Rate: {lr}")
+    print(f" Seed: {seed}")
+    print(f" Logging to: {log_dir}\n")
+ 
+    model = create_model(env, lr, log_dir)
+    model.learn(total_timesteps=timesteps, progress_bar=True)
+ 
+    # build model filename
+    model_filename = f"DQN_MountainCar_lr-{lr}_seed-{seed}_{timestamp}_{timesteps}steps.zip"
+    model_path = os.path.join(log_dir, model_filename)
+ 
+    # save model
+    model.save(model_path)
+ 
+    print(f"\n Model saved to: {model_path}\n")
+ 
+    env.close()
+ 
+ 
+# ---------------------------------------------------------
+# Demo using a chosen model file
+# ---------------------------------------------------------
+def run_demo(model_path, episodes=3):
+ 
+    if not os.path.exists(model_path):
+        print(f"\n ERROR: Model file not found: {model_path}\n")
+        return
+ 
+    print(f"\n Running Demo with model: {model_path}\n")
+ 
+    env = make_env()
+    model = DQN.load(model_path)
+ 
+    for ep in range(episodes):
+        obs, _ = env.reset()
+        done = False
+        total_reward = 0
+ 
+        while not done:
+            action, _ = model.predict(obs, deterministic=True)
+            obs, reward, terminated, truncated, _ = env.step(action)
+            total_reward += reward
+            done = terminated or truncated
+ 
+        print(f"Episode {ep+1} reward: {total_reward}")
+ 
+    env.close()
+ 
+ 
+# ---------------------------------------------------------
+# CLI
+# ---------------------------------------------------------
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train", action="store_true")
+    parser.add_argument("--demo", action="store_true")
+ 
+    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--timesteps", type=int, default=5_000)
+    parser.add_argument("--seed", type=int, default=None)   
+ 
+    parser.add_argument("--model", type=str, default=None)
+    parser.add_argument("--episodes", type=int, default=3)
+ 
+    args = parser.parse_args()
+ 
+    # ---------------------------------------------------------
+    # MULTI-SEED TRAINING LOGIC
+    # ---------------------------------------------------------
+    if args.train:
+ 
+        if args.seed is None:
+            # Run 5 seeds automatically
+            seeds = [1]
+            print(f"\nRunning automatic multi-seed training: {seeds}\n")
+ 
+            for s in seeds:
+                print(f"\n========== RUNNING SEED {s} ==========\n")
+                train_dqn(args.lr, args.timesteps, s)
+ 
+        else:
+            # Run just one seed
+            train_dqn(args.lr, args.timesteps, args.seed)
+ 
+    elif args.demo:
+        if args.model is None:
+            print("\n ERROR: You must specify a model with --model path\n")
+        else:
+            run_demo(args.model, args.episodes)
+ 
+    else:
+        print("\n Please specify either --train or --demo.\n")
