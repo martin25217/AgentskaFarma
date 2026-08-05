@@ -11,7 +11,7 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "rgb_array",repeat_action_probability=0.0)
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "human",repeat_action_probability=0.0)
 env = gym.wrappers.FlattenObservation(env)
 
 
