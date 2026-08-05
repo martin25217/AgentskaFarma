@@ -83,3 +83,4 @@ class Model:
             if terminated or truncated or info["lives"] < poc:
                 break
         return result
+    

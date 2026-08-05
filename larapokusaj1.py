@@ -1,9 +1,9 @@
-from gym import Model
-import random 
-import pickle as pc
-import time
-import numpy as np
+import argparse
+from pathlib import Path
 
+import ale_py
+import gymnasium as gym
+import numpy as np
 
 
 gym.register_envs(ale_py)
@@ -113,6 +113,7 @@ def make_coordinate_env(render_mode=None):
 
 def visualize(seed=0, output=None):
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
 
     env = make_coordinate_env("rgb_array")
     observation, _ = env.reset(seed=seed)
@@ -186,7 +187,9 @@ def visualize(seed=0, output=None):
             small_tile_count,
         )
 
-    animation = FuncAnimation(figure, update, frames=160, interval=50, blit=False, cache_frame_data=False)
+    animation = FuncAnimation(
+        figure, update, frames=160, interval=50, blit=False, cache_frame_data=False
+    )
     figure.canvas.mpl_connect("close_event", lambda _: env.close())
     if output:
         animation.save(output, writer="pillow", fps=20)
@@ -225,55 +228,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     check() if args.check else visualize(args.seed, args.save)
 
-kol = 100   
-velicina_populacije = 50
-elitizam = int(velicina_populacije * 0.1)
-broj_generacija = 2000
-sigma = 0.5
-populacija= []
 
-maxi = -10000000
 
-for i in range (velicina_populacije):
-    x = Model([kol,int(kol/2),30,30,20,9], 33600)
-    populacija.append(x)
 
-for _ in range(broj_generacija):
-    print("generacija: ", _)
-    t0 = time.time()
-    evaluacija = []
-    for model in populacija:
-         score = model.eval_model()
-         evaluacija.append([score, model])
-    t1 = time.time()
-    print(f"eval phase: {t1-t0:.1f}s")
-
-    # ... rest of generation ...
-    t2 = time.time()
-    print(f"full generation: {t2-t0:.1f}s", flush=True)
-
-    evaluacija.sort(key=lambda item: item[0], reverse= True)
-    if (evaluacija[0][0] > maxi):
-        maxi = evaluacija[0][0]
-        pc.dump(evaluacija[0][1], open('peakmodel.pkl','wb'))
-        print("updated",'\n')
-    print("score: ",evaluacija[0][0])
-    nova_populacija = []
-
-    for idx in range(elitizam):
-        nova_populacija.append(evaluacija[idx][1])
-    
-    for i in range (velicina_populacije - elitizam):
-        p1=random.choice(evaluacija[:int(velicina_populacije/3)])[1]
-        p2=random.choice(evaluacija[:int(velicina_populacije/3)])[1]
-
-        dijete = Model([kol,int(kol/2),int(kol/4),30,20,9], 33600)
-        dijete.cross(p1,p2,sigma)
-        nova_populacija.append(dijete)
-
-    
-    populacija = nova_populacija 
-    sigma *= 0.995
-    sigma = max(sigma, 0.02)    
-    
-    
+        

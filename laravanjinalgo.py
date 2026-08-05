@@ -1,10 +1,14 @@
 from gym import Model
-import random 
+import argparse
+from pathlib import Path
+
+import ale_py
+import gymnasium as gym
+import numpy as np
+import random
 import pickle as pc
 import time
-import numpy as np
-
-
+  
 
 gym.register_envs(ale_py)
 ENTITY_NAMES = ("pacman", "orange", "cyan", "pink", "red", "fruit")
@@ -49,8 +53,6 @@ SMALL_TILE_GRIDS = tuple(
 111101111111101111""",
     )
 )
-# RAM layout: https://github.com/k4ntz/OC_Atari/blob/master/ocatari/ram/mspacman.py
-
 
 class LoseLifeEndsRun(gym.Wrapper):
     def reset(self, **kwargs):
@@ -65,10 +67,7 @@ class LoseLifeEndsRun(gym.Wrapper):
         self.lives = lives
         return observation, reward, terminated, truncated, info
 
-
 class CoordinateObservation(gym.ObservationWrapper):
-    """Return 6 characters/fruit, 4 big tiles, then 252 small-tile coordinate slots."""
-
     def __init__(self, env):
         super().__init__(env)
         self.observation_space = gym.spaces.Box(-13, 256, (262, 2), np.float32)
@@ -99,7 +98,6 @@ class CoordinateObservation(gym.ObservationWrapper):
                     )
         return coordinates
 
-
 def make_coordinate_env(render_mode=None):
     env = gym.make(
         "ALE/MsPacman-v5",
@@ -110,15 +108,13 @@ def make_coordinate_env(render_mode=None):
     )
     return CoordinateObservation(LoseLifeEndsRun(env))
 
-
 def visualize(seed=0, output=None):
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
 
     env = make_coordinate_env("rgb_array")
     observation, _ = env.reset(seed=seed)
-    figure, (axis, coordinate_axis) = plt.subplots(
-        1, 2, figsize=(8, 6), gridspec_kw={"width_ratios": (2, 1)}
-    )
+    figure, (axis, coordinate_axis) = plt.subplots1( 2, figsize=(8, 6), gridspec_kw={"width_ratios": (2, 1)})
     image = axis.imshow(env.render())
     visible = observation.copy()
     visible[(visible < 0).any(axis=1)] = np.nan
@@ -186,7 +182,9 @@ def visualize(seed=0, output=None):
             small_tile_count,
         )
 
-    animation = FuncAnimation(figure, update, frames=160, interval=50, blit=False, cache_frame_data=False)
+    animation = FuncAnimation(
+        figure, update, frames=160, interval=50, blit=False, cache_frame_data=False
+    )
     figure.canvas.mpl_connect("close_event", lambda _: env.close())
     if output:
         animation.save(output, writer="pillow", fps=20)
@@ -194,7 +192,6 @@ def visualize(seed=0, output=None):
     else:
         plt.show()
     return animation
-
 
 def check():
     env = make_coordinate_env("rgb_array")
@@ -207,73 +204,81 @@ def check():
         assert np.count_nonzero(coordinates[10:, 0] >= 0) == 150
         assert env.render().shape == (210, 160, 3)
         assert env.observation_space.contains(observation)
-        env.env.lives += 1
-        _, _, terminated, _, info = env.step(0)
+        env.env.lives += 1  
+        _   , _, terminated, _, info = env.step(0)
         assert terminated and env.env.lives == info["lives"]
     finally:
-        env.close()
+       env.close()
     print("OK")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Visualize RAM coordinates over Ms. Pac-Man.")
-    parser.add_argument("--check", action="store_true")
-    parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument(
-        "--save", type=Path, metavar="FILE", help="save the visualization as a GIF"
-    )
-    args = parser.parse_args()
-    check() if args.check else visualize(args.seed, args.save)
-
-kol = 100   
+kol = 100
 velicina_populacije = 50
 elitizam = int(velicina_populacije * 0.1)
 broj_generacija = 2000
 sigma = 0.5
-populacija= []
 
-maxi = -10000000
 
-for i in range (velicina_populacije):
-    x = Model([kol,int(kol/2),30,30,20,9], 33600)
-    populacija.append(x)
-
-for _ in range(broj_generacija):
-    print("generacija: ", _)
-    t0 = time.time()
-    evaluacija = []
-    for model in populacija:
-         score = model.eval_model()
-         evaluacija.append([score, model])
-    t1 = time.time()
-    print(f"eval phase: {t1-t0:.1f}s")
-
-    # ... rest of generation ...
-    t2 = time.time()
-    print(f"full generation: {t2-t0:.1f}s", flush=True)
-
-    evaluacija.sort(key=lambda item: item[0], reverse= True)
-    if (evaluacija[0][0] > maxi):
-        maxi = evaluacija[0][0]
-        pc.dump(evaluacija[0][1], open('peakmodel.pkl','wb'))
-        print("updated",'\n')
-    print("score: ",evaluacija[0][0])
-    nova_populacija = []
-
-    for idx in range(elitizam):
-        nova_populacija.append(evaluacija[idx][1])
+def run_genetic():
     
-    for i in range (velicina_populacije - elitizam):
-        p1=random.choice(evaluacija[:int(velicina_populacije/3)])[1]
-        p2=random.choice(evaluacija[:int(velicina_populacije/3)])[1]
+    populacija = []
+    maxi = -10000000
 
-        dijete = Model([kol,int(kol/2),int(kol/4),30,20,9], 33600)
-        dijete.cross(p1,p2,sigma)
-        nova_populacija.append(dijete)
+    for i in range(velicina_populacije):
+        x = Model([kol, int(kol/2), 30, 30, 20, 9], 33600)
+        populacija.append(x)
 
+    for _ in range(broj_generacija):
+        print("generacija: ", _)
+        t0 = time.time()
+        evaluacija = []
+        for model in populacija:
+            score = model.eval_model()
+            evaluacija.append([score, model])
+        t1 = time.time()
+        print(f"eval phase: {t1-t0:.1f}s")
+
+        t2 = time.time()
+        print(f"full generation: {t2-t0:.1f}s", flush=True)
+
+        evaluacija.sort(key=lambda item: item[0], reverse=True)
+        if evaluacija[0][0] > maxi:
+            maxi = evaluacija[0][0]
+            pc.dump(evaluacija[0][1], open('peakmodel.pkl', 'wb'))
+            print("updated", '\n')
+        print("score: ", evaluacija[0][0])
+
+        nova_populacija = []
+        for idx in range(elitizam):
+            nova_populacija.append(evaluacija[idx][1])
+
+        for i in range(velicina_populacije - elitizam):
+            p1 = random.choice(evaluacija[:int(velicina_populacije/3)])[1]
+            p2 = random.choice(evaluacija[:int(velicina_populacije/3)])[1]
+
+            dijete = Model([kol, int(kol/2), int(kol/4), 30, 20, 9], 33600)
+            dijete.cross(p1, p2, sigma)
+            nova_populacija.append(dijete)
+
+        populacija = nova_populacija
+        sigma *= 0.995
+        sigma = max(sigma, 0.02)
+        if __name__ == "__main__":
+            parser = argparse.ArgumentParser(description="Ms. Pac-Man evolution or visualization.")
     
-    populacija = nova_populacija 
-    sigma *= 0.995
-    sigma = max(sigma, 0.02)    
+            parser.add_argument("--check", action="store_true", help="Run check on environment")
+            parser.add_argument("--seed", type=int, default=0, help="Seed for visualization")
+            parser.add_argument("--save", type=Path, metavar="FILE", help="Save visualization as GIF")
     
-    
+            parser.add_argument("--genetic", action="store_true", help="Run genetic algorithm instead of visualization")
+            args = parser.parse_args()
+
+        if args.genetic:
+            run_genetic()
+        else:
+            if args.check:
+                check()
+            else:
+                visualize(args.seed, args.save)
+
+
