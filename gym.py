@@ -105,12 +105,18 @@ class Model:
             self._cross_tensor(a, b, sigma / sqrt(fan_in))
             for a, b, fan_in in zip(x1.conv_weights, x2.conv_weights, fan_ins)
         ]
-        self.conv_biases = [self._cross_tensor(a, b, sigma) for a, b in zip(x1.conv_biases, x2.conv_biases)]
+        self.conv_biases = [
+            self._cross_tensor(a, b, sigma / sqrt(fan_in))
+            for a, b, fan_in in zip(x1.conv_biases, x2.conv_biases, fan_ins)
+        ]
         self.weights = [
             self._cross_tensor(a, b, sigma / sqrt(fan_in))
             for a, b, fan_in in zip(x1.weights, x2.weights, [DENSE_INPUT, *self.sloj[:-1]])
         ]
-        self.biases = [self._cross_tensor(a, b, sigma) for a, b in zip(x1.biases, x2.biases)]
+        self.biases = [
+            self._cross_tensor(a, b, sigma / sqrt(fan_in))
+            for a, b, fan_in in zip(x1.biases, x2.biases, [DENSE_INPUT, *self.sloj[:-1]])
+        ]
 
     def _cross_tensor(self, a, b, step):
         a, b = a.to(self.device), b.to(self.device)
@@ -263,16 +269,18 @@ class Population:
             for value, (in_channels, _, kernel, _) in zip(self.conv_weights, CONV_LAYERS)
         ]
         child.conv_biases = [
-            self._breed_tensor(value, order, parents, elite_count, sigma, mutation_rate)
-            for value in self.conv_biases
+            self._breed_tensor(
+                value, order, parents, elite_count, sigma / sqrt(in_channels * kernel * kernel), mutation_rate
+            )
+            for value, (in_channels, _, kernel, _) in zip(self.conv_biases, CONV_LAYERS)
         ]
         child.weights = [
             self._breed_tensor(value, order, parents, elite_count, sigma / sqrt(fan_in), mutation_rate)
             for value, fan_in in zip(self.weights, [DENSE_INPUT, *self.sloj[:-1]])
         ]
         child.biases = [
-            self._breed_tensor(value, order, parents, elite_count, sigma, mutation_rate)
-            for value in self.biases
+            self._breed_tensor(value, order, parents, elite_count, sigma / sqrt(fan_in), mutation_rate)
+            for value, fan_in in zip(self.biases, [DENSE_INPUT, *self.sloj[:-1]])
         ]
         return child
 
