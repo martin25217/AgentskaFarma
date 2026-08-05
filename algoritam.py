@@ -24,10 +24,10 @@ def evaluate(population, envs, seeds, steps):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Evolve a cooperative two-paddle Pong policy on PyTorch.")
+    parser = argparse.ArgumentParser(description="Evolve a cooperative two-paddle Pong RAM policy.")
     parser.add_argument("--hours", type=float, default=1, help="maximum runtime (default: 1)")
     parser.add_argument("--population", type=int, default=30)
-    parser.add_argument("--width", type=int, default=100)
+    parser.add_argument("--width", type=int, default=32)
     parser.add_argument("--steps", type=int, default=ROLLOUT_STEPS, help="policy decisions per seed")
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
@@ -67,7 +67,7 @@ def main():
     resumed = Model.load(args.resume, device) if args.resume else None
     if resumed and resumed.sloj[-1] != ACTION_COUNT:
         raise SystemExit("checkpoint is not a two-player Pong model")
-    layers = resumed.sloj if resumed else [args.width] * 5 + [ACTION_COUNT]
+    layers = resumed.sloj if resumed else [args.width] * 2 + [ACTION_COUNT]
     population = Population(args.population, layers, device)
     sigma = args.sigma
     best_score = float("-inf")
@@ -80,7 +80,7 @@ def main():
 
     elite_count = max(1, int(args.population * args.elite_fraction))
     deadline = time.monotonic() + args.hours * 3600
-    checkpoint = Path(__file__).parent / "weights" / "pong-coop-best.pt"
+    checkpoint = Path(__file__).parent / "weights" / "pong-ram-coop-best.pt"
     envs = ThreadedEnvs(args.population, min(args.workers, args.population))
 
     print(
