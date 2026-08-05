@@ -1,19 +1,19 @@
 from gym import Model  
-import random 
+import random as pyrandom
 import pickle as pc
 import time
 
 kol = 100   
-velicina_populacije = 50
+velicina_populacije = 100
 elitizam = int(velicina_populacije * 0.1)
-broj_generacija = 2000
+broj_generacija = 200
 sigma = 0.5
 populacija= []
 
 maxi = -10000000
 
 for i in range (velicina_populacije):
-    x = Model([kol,int(kol/2),30,30,20,9], 33600)
+    x = Model([33600,9])
     populacija.append(x)
 
 for _ in range(broj_generacija):
@@ -22,12 +22,13 @@ for _ in range(broj_generacija):
     evaluacija = []
     for model in populacija:
          score = model.eval_model()
+         model.score = score
          evaluacija.append([score, model])
     t1 = time.time()
     print(f"eval phase: {t1-t0:.1f}s")
 
-    t2 = time.time()
-    print(f"full generation: {t2-t0:.1f}s", flush=True)
+    #t2 = time.time()
+    #print(f"full generation: {t2-t0:.1f}s", flush=True)
 
     evaluacija.sort(key=lambda item: item[0], reverse= True)
     if (evaluacija[0][0] > maxi):
@@ -41,10 +42,10 @@ for _ in range(broj_generacija):
         nova_populacija.append(evaluacija[idx][1])
     
     for i in range (velicina_populacije - elitizam):
-        p1=random.choice(evaluacija[:int(velicina_populacije/3)])[1]
-        p2=random.choice(evaluacija[:int(velicina_populacije/3)])[1]
+        p1=pyrandom.choice(evaluacija[:int(velicina_populacije/3)])[1]
+        p2=pyrandom.choice(evaluacija[:int(velicina_populacije/3)])[1]
 
-        dijete = Model([kol,int(kol/2),int(kol/4),30,20,9], 33600)
+        dijete = Model([33600,9])
         dijete.cross(p1,p2,sigma)
         nova_populacija.append(dijete)
 
