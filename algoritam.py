@@ -26,7 +26,6 @@ for _ in range(broj_generacija):
     t1 = time.time()
     print(f"eval phase: {t1-t0:.1f}s")
 
-    # ... rest of generation ...
     t2 = time.time()
     print(f"full generation: {t2-t0:.1f}s", flush=True)
 
