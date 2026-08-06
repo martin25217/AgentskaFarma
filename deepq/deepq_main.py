@@ -16,7 +16,8 @@ gym.register_envs(ale_py)
 device = torch.device(
     "cuda" if torch.cuda.is_available()
     else "cpu"
-)
+)#If CUDA available -> network weights → GPU memory; If CUDA not -> network weights → CPU memory
+#(Compute Unified Device Architecture) allows programs to use an NVIDIA GPU for general-purpose computing, not just graphics.
 
 print("Environment created")
 env = gym.make(
@@ -33,7 +34,7 @@ env = FrameStackObservation(
 )
 
 
-actions = env.action_space.n
+actions = env.action_space.n#what actions the agent can take - action_space; For a Discrete (fixed number) action space, .n gives the number of possible actions.
 
 print("Agent created")
 agent = Agent(
@@ -63,7 +64,7 @@ for episode in range(episodes):
 
         done = terminated or truncated
 
-
+#stores one experience in the agent's replay memory
         agent.memory.push(
             state,
             action,
@@ -73,7 +74,7 @@ for episode in range(episodes):
         )
 
 
-        agent.train(batch_size)
+        agent.train(batch_size)#model.train() (PyTorch built-in); batch - "When training, take 32 examples at a time."
 
 
         state = next_state
@@ -92,7 +93,7 @@ for episode in range(episodes):
     print(
         episode,
         total_reward,
-        agent.epsilon
+        agent.epsilon#defined in agent(53)
     )
 
 

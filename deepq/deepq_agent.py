@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
+import torch.optim as optim#optimization algorithms used to train deep learning models, updates network weights and biases by minimizing a loss function
 import random
 import numpy as np
 
@@ -17,7 +17,7 @@ class Agent:
 
 
         # Main network (learns)
-        self.policy_net = DQN(actions).to(device)
+        self.policy_net = DQN(actions).to(device)#class DQN(nn.Module): -> DQN(actions) - creates a neural network; self.policy_net - stores the neural network inside the agent
 
 
         # Target network (stable target values)
@@ -25,21 +25,21 @@ class Agent:
 
         self.target_net.load_state_dict(
             self.policy_net.state_dict()
-        )
+        )#copies all the learned weights from policy_net to target_net; nece se kopirat svaki put kad se pozove class.
 
-        self.target_net.eval()
+        self.target_net.eval()#used to make predictions
 
 
         # Memory storage
         self.memory = ReplayMemory(
-            100000
+            100000#"This replay buffer can store up to 100,000 experiences."
         )
 
 
         # Optimizer
         self.optimizer = optim.Adam(
             self.policy_net.parameters(),
-            lr=0.00025
+            lr=0.00025#learning rate
         )
 
 
@@ -51,9 +51,9 @@ class Agent:
 
 
         # Exploration settings
-        self.epsilon = 1.0
+        self.epsilon = 1.0#starting exploration rate.
         self.epsilon_min = 0.1
-        self.epsilon_decay = 0.999995
+        self.epsilon_decay = 0.999995#how quickly epsilon decreases
 
 
 
