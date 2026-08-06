@@ -11,12 +11,12 @@ import gymnasium as gym
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "human",repeat_action_probability=0.0)
+env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "rgb_array",repeat_action_probability=0.0)
 env = gym.wrappers.FlattenObservation(env)
 
 
 class Model:
-    def cross(self, x1, x2, sigma):
+    def cross(self, x1, x2, sigma, mutation_prob):
         self.sigma = sigma
 
         weightx = []
@@ -30,7 +30,7 @@ class Model:
 
         for b1, b2 in zip(x1.biases, x2.biases):
             nb = (b1 + b2) / 2
-            mask = rng.random(nb.shape) > 0.94
+            mask = rng.random(nb.shape) > mutation_prob
             nb += mask * rng.normal(0, sigma, nb.shape)
             biasex.append(nb)
 
@@ -68,15 +68,6 @@ class Model:
         while True:
             action = int(argmax(self.feed_forward(obs)))
             obs, reward, terminated, truncated, info = env.step(action)
-
-            if reward == 0:
-                reward-=1
-            if action == 0:
-                reward = -1000
-            if action != 0 and array_equal(obs, prev_obs):
-                reward = -1000
-            if reward > 100:
-               reward = 50
 
             prev_obs = obs.copy()
             result = result + reward

@@ -133,6 +133,8 @@ sigma = 0.5
 
 
 def run_genetic():
+    global sigma
+
 
     populacija = []
     maxi = -10000000
