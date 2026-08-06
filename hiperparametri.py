@@ -1,5 +1,4 @@
 from vizualizacijakordinati import run_genetic
-from gym import cross
 import itertools
 import json
 import time
