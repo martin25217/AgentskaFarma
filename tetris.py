@@ -1,5 +1,6 @@
 import argparse
 import tempfile
+import time
 from pathlib import Path
 
 import ale_py
@@ -14,6 +15,7 @@ TARGETS = range(2, 13)
 ACTION_COUNT = 4 * len(TARGETS)
 FEATURES = ROWS * COLUMNS + 7
 CHECKPOINT_VERSION = 1
+LINE_SCORES = (0, 1, 2, 3, 10)
 
 # Exact pieces and rotations from the ALE Tetris ROM's blktab.
 SHAPES = (
@@ -95,20 +97,26 @@ def board_quality(board):
     return -0.510066 * heights.sum() - 0.35663 * holes - 0.184483 * np.abs(np.diff(heights)).sum()
 
 
-def teacher_action(state):
+def heuristic_values(state):
     board = state[: ROWS * COLUMNS].reshape(ROWS, COLUMNS).astype(np.uint8)
     piece = int(state[-7:].argmax())
     legal = np.flatnonzero(LEGAL_ACTIONS[piece])
-    best = (float("-inf"), int(legal[0]))
+    values = np.full(ACTION_COUNT, -np.inf, dtype=np.float32)
     for action in legal:
         rotation, target = decode_action(action)
         after, lines = place(board, piece, rotation, target)
         if after is None:
             continue
-        score = board_quality(after) + 0.760666 * lines
-        if score > best[0]:
-            best = score, int(action)
-    return best[1]
+        values[action] = board_quality(after) + 0.760666 * LINE_SCORES[lines]
+    return values
+
+
+def teacher_action(state):
+    values = heuristic_values(state)
+    if np.isfinite(values).any():
+        return int(np.argmax(values))
+    piece = int(state[-7:].argmax())
+    return int(np.flatnonzero(LEGAL_ACTIONS[piece])[0])
 
 
 class PlacementTetris:
@@ -256,6 +264,21 @@ class ReplayBuffer:
         )
 
 
+def guided_action(policy, state, device, guide):
+    with torch.inference_mode():
+        q_values = policy(torch.as_tensor(state, device=device).unsqueeze(0))[0].cpu().numpy()
+    heuristic = heuristic_values(state)
+    legal = np.isfinite(heuristic)
+    if not legal.any():
+        return int(np.argmax(q_values))
+    legal_actions = np.flatnonzero(legal)
+    q_values = q_values[legal]
+    heuristic = heuristic[legal]
+    q_values = (q_values - q_values.mean()) / (q_values.std() + 1e-6)
+    heuristic = (heuristic - heuristic.mean()) / (heuristic.std() + 1e-6)
+    return int(legal_actions[np.argmax(q_values + guide * heuristic)])
+
+
 def resolve_device(name):
     if name == "auto":
         name = "cuda" if torch.cuda.is_available() else "cpu"
@@ -287,12 +310,31 @@ def load_checkpoint(path, device):
 def transition_reward(state, next_state, lines, done, shaping):
     before = board_quality(state[: ROWS * COLUMNS].reshape(ROWS, COLUMNS))
     after = board_quality(next_state[: ROWS * COLUMNS].reshape(ROWS, COLUMNS))
-    return 4.0 * lines + shaping * (after - before) - 5.0 * done
+    return 4.0 * LINE_SCORES[lines] + shaping * (after - before) - 5.0 * done
+
+
+def evaluate(policy, device, guide, episodes, max_pieces):
+    env = PlacementTetris()
+    scores = []
+    try:
+        for episode in range(episodes):
+            state = env.reset(10_000 + episode)
+            score = 0
+            for _ in range(max_pieces):
+                state, reward, done, _ = env.step(guided_action(policy, state, device, guide))
+                score += LINE_SCORES[reward]
+                if done:
+                    break
+            scores.append(score)
+    finally:
+        env.close()
+    return float(np.mean(scores))
 
 
 def train(args):
     if not (
-        args.steps >= 1
+        args.steps >= 0
+        and args.hours > 0
         and args.warmup >= args.batch
         and args.batch >= 2
         and args.replay >= args.warmup
@@ -309,6 +351,10 @@ def train(args):
         and args.imitation_epochs >= 0
         and args.imitation >= 0
         and args.shaping >= 0
+        and np.isfinite(args.guide)
+        and args.guide >= 0
+        and args.eval_episodes >= 1
+        and args.eval_pieces >= 1
         and 0 <= args.sticky <= 1
     ):
         raise SystemExit("training parameters must be positive")
@@ -322,9 +368,9 @@ def train(args):
     demonstrations, labels = [], []
     env = PlacementTetris(args.sticky)
     state = env.reset(args.seed)
-    episodes = lines = 0
+    episodes = warmup_lines = warmup_tetrises = 0
     try:
-        for warmup_step in range(args.warmup):
+        for _ in range(args.warmup):
             label = teacher_action(state)
             demonstrations.append(state)
             labels.append(label)
@@ -342,7 +388,8 @@ def train(args):
                 next_state,
                 done,
             )
-            lines += cleared
+            warmup_lines += cleared
+            warmup_tetrises += cleared == 4
             state = env.reset(args.seed + episodes + 1) if done else next_state
             episodes += done
 
@@ -356,8 +403,25 @@ def train(args):
                 optimizer.step()
         target.load_state_dict(policy.state_dict())
 
+        print(
+            f"warmup={args.warmup} lines={warmup_lines} tetrises={warmup_tetrises} deaths={episodes} "
+            f"guide={args.guide:g} device={device}",
+            flush=True,
+        )
+        started = time.monotonic()
+        deadline = started + args.hours * 3_600
+        best_score = float("-inf")
+        if args.checkpoint.is_file():
+            incumbent, _ = load_checkpoint(args.checkpoint, device)
+            incumbent.eval()
+            best_score = evaluate(
+                incumbent, device, args.guide, args.eval_episodes, args.eval_pieces
+            )
+            print(f"incumbent={args.checkpoint} eval={best_score:g}", flush=True)
+        online_lines = online_tetrises = online_episodes = step = 0
         last_loss = float("nan")
-        for step in range(1, args.steps + 1):
+        while time.monotonic() < deadline and (args.steps == 0 or step < args.steps):
+            step += 1
             epsilon = args.initial_epsilon + min(step / args.epsilon_decay, 1) * (
                 args.final_epsilon - args.initial_epsilon
             )
@@ -367,9 +431,7 @@ def train(args):
             elif rng.random() < epsilon:
                 action = int(rng.choice(np.flatnonzero(LEGAL_ACTIONS[piece])))
             else:
-                action = int(
-                    policy.act(torch.as_tensor(state, device=device).unsqueeze(0))[0]
-                )
+                action = guided_action(policy, state, device, args.guide)
             next_state, cleared, done, _ = env.step(action)
             replay.add(
                 state,
@@ -378,9 +440,11 @@ def train(args):
                 next_state,
                 done,
             )
-            lines += cleared
+            online_lines += cleared
+            online_tetrises += cleared == 4
             state = env.reset(args.seed + episodes + 1) if done else next_state
             episodes += done
+            online_episodes += done
 
             if step % args.train_every == 0:
                 batch_states, batch_actions, rewards, next_states, dones = replay.sample(
@@ -407,44 +471,70 @@ def train(args):
 
             if step % args.target_update == 0:
                 target.load_state_dict(policy.state_dict())
-            if step % args.report_every == 0 or step == args.steps:
-                save_checkpoint(
-                    args.checkpoint,
-                    policy,
-                    algorithm="double-dqn",
-                    steps=step,
-                    samples=args.warmup + step,
+            finished = args.steps and step == args.steps
+            if step % args.report_every == 0 or finished:
+                score = evaluate(
+                    policy, device, args.guide, args.eval_episodes, args.eval_pieces
                 )
+                saved = score > best_score
+                if saved:
+                    best_score = score
+                    save_checkpoint(
+                        args.checkpoint,
+                        policy,
+                        algorithm="guided-double-dqn",
+                        steps=step,
+                        samples=args.warmup + step,
+                        guide=args.guide,
+                        eval_points=best_score,
+                    )
+                elapsed = max(time.monotonic() - started, 1e-6)
+                saved_text = f" saved={args.checkpoint}" if saved else ""
                 print(
-                    f"step={step}/{args.steps} epsilon={epsilon:.3f} loss={last_loss:.4f} "
-                    f"lines={lines} deaths={episodes} saved={args.checkpoint}",
+                    f"step={step} epsilon={epsilon:.3f} loss={last_loss:.4f} "
+                    f"train_lines={online_lines} tetrises={online_tetrises} deaths={online_episodes} "
+                    f"eval_points={score:g} "
+                    f"best_points={best_score:g} pps={step / elapsed:.0f}{saved_text}",
                     flush=True,
                 )
+    except KeyboardInterrupt:
+        print("stopped", flush=True)
     finally:
         env.close()
 
 
-def play(checkpoint, device_name, use_teacher):
+def play(checkpoint, device_name, use_teacher, guide=None):
     device = resolve_device(device_name)
-    policy = None if use_teacher else load_checkpoint(checkpoint, device)[0].eval()
+    if use_teacher:
+        policy = None
+    else:
+        policy, metadata = load_checkpoint(checkpoint, device)
+        policy.eval()
+        guide = metadata.get("guide", 16.0) if guide is None else guide
+        if not np.isfinite(guide) or guide < 0:
+            raise SystemExit("guide must be finite and non-negative")
     env = PlacementTetris(render_mode="human")
     state = env.reset()
-    lines = 0
-    print("Ctrl-C to stop", flush=True)
+    lines = score = 0
+    print(f"Ctrl-C to stop" + ("" if use_teacher else f"; guide={guide:g}"), flush=True)
     try:
         while True:
             action = (
                 teacher_action(state)
                 if use_teacher
-                else int(policy.act(torch.as_tensor(state, device=device).unsqueeze(0))[0])
+                else guided_action(policy, state, device, guide)
             )
             state, reward, done, _ = env.step(action)
             lines += reward
+            score += LINE_SCORES[reward]
             if reward:
-                print(f"lines={lines}", flush=True)
+                print(
+                    f"lines={lines} score={score}" + (" TETRIS!" if reward == 4 else ""),
+                    flush=True,
+                )
             if done:
-                print(f"game_over lines={lines}", flush=True)
-                state, lines = env.reset(), 0
+                print(f"game_over lines={lines} score={score}", flush=True)
+                state, lines, score = env.reset(), 0, 0
     except KeyboardInterrupt:
         pass
     finally:
@@ -452,12 +542,21 @@ def play(checkpoint, device_name, use_teacher):
 
 
 def check():
+    assert LINE_SCORES == (0, 1, 2, 3, 10)
     board = np.zeros((ROWS, COLUMNS), dtype=np.uint8)
     board[0, :6] = 1
     after, lines = place(board, 6, 0, 9)
     assert lines == 1 and after.sum() == 0
     state = np.concatenate((board.ravel(), np.eye(7, dtype=np.float32)[6]))
     assert LEGAL_ACTIONS[6, teacher_action(state)]
+    assert guided_action(Policy(16), state, torch.device("cpu"), 16) in np.flatnonzero(
+        LEGAL_ACTIONS[6]
+    )
+    blocked = np.concatenate(
+        (np.ones(ROWS * COLUMNS, dtype=np.float32), np.eye(7, dtype=np.float32)[6])
+    )
+    assert LEGAL_ACTIONS[6, teacher_action(blocked)]
+    assert LEGAL_ACTIONS[6, guided_action(Policy(16), blocked, torch.device("cpu"), 16)]
 
     env = PlacementTetris()
     try:
@@ -488,7 +587,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Fast placement-level Double DQN for ALE/Tetris-v5.")
     commands = parser.add_subparsers(dest="command", required=True)
     training = commands.add_parser("train")
-    training.add_argument("--steps", type=int, default=20_000, help="RL placement steps")
+    training.add_argument("--hours", type=float, default=1, help="maximum training time")
+    training.add_argument("--steps", type=int, default=0, help="optional placement limit; 0 uses hours")
     training.add_argument("--warmup", type=int, default=2_000)
     training.add_argument("--imitation-epochs", type=int, default=3)
     training.add_argument("--imitation", type=float, default=0.1)
@@ -498,14 +598,17 @@ def parse_args():
     training.add_argument("--learning-rate", type=float, default=2.5e-4)
     training.add_argument("--gamma", type=float, default=0.99)
     training.add_argument("--shaping", type=float, default=0.05)
-    training.add_argument("--initial-epsilon", type=float, default=0.5)
-    training.add_argument("--final-epsilon", type=float, default=0.05)
-    training.add_argument("--epsilon-decay", type=int, default=15_000)
+    training.add_argument("--initial-epsilon", type=float, default=0.1)
+    training.add_argument("--final-epsilon", type=float, default=0.01)
+    training.add_argument("--epsilon-decay", type=int, default=50_000)
     training.add_argument("--target-update", type=int, default=1_000)
     training.add_argument("--train-every", type=int, default=4)
     training.add_argument("--report-every", type=int, default=1_000)
     training.add_argument("--teacher-fraction", type=float, default=0.05)
-    training.add_argument("--exploration", type=float, default=0.1)
+    training.add_argument("--exploration", type=float, default=0.05)
+    training.add_argument("--guide", type=float, default=16.0)
+    training.add_argument("--eval-episodes", type=int, default=1)
+    training.add_argument("--eval-pieces", type=int, default=1_000)
     training.add_argument("--sticky", type=float, default=0.0)
     training.add_argument("--seed", type=int, default=0)
     training.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
@@ -513,6 +616,7 @@ def parse_args():
     watching = commands.add_parser("watch")
     watching.add_argument("checkpoint", nargs="?", type=Path, default=Path("weights/tetris-double-dqn.pt"))
     watching.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    watching.add_argument("--guide", type=float)
     commands.add_parser("heuristic")
     commands.add_parser("check")
     return parser.parse_args()
@@ -529,4 +633,5 @@ if __name__ == "__main__":
             getattr(arguments, "checkpoint", Path("weights/tetris-double-dqn.pt")),
             getattr(arguments, "device", "auto"),
             arguments.command == "heuristic",
+            getattr(arguments, "guide", None),
         )
