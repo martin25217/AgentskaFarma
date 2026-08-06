@@ -1,29 +1,11 @@
 [
   {
-    "velicina_populacije": 20,
-    "broj_generacija": 30,
+    "velicina_populacije": 50,
+    "broj_generacija": 100,
     "sigma": 0.2,
-    "elitizam": 1,
-    "best_score": -4627.0,
+    "elitizam": 2,
+    "best_score": 1680.0,
     "mutation_prob": 0.8,
-    "elapsed_seconds": 474.8
-  },
-  {
-    "velicina_populacije": 20,
-    "broj_generacija": 30,
-    "sigma": 0.2,
-    "elitizam": 1,
-    "best_score": -4661.0,
-    "mutation_prob": 0.9,
-    "elapsed_seconds": 492.0
-  },
-  {
-    "velicina_populacije": 20,
-    "broj_generacija": 30,
-    "sigma": 0.2,
-    "elitizam": 1,
-    "best_score": -4771.0,
-    "mutation_prob": 0.98,
-    "elapsed_seconds": 518.0
+    "elapsed_seconds": 644.7
   }
 ]
