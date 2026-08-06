@@ -20,7 +20,7 @@ cnt = 0
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="grayscale", render_mode = "rgb_array",repeat_action_probability=0.0)
+env = gym.make("ALE/MsPacman-v5", obs_type="ram", render_mode = "None",repeat_action_probability=0.0)
 env = gym.wrappers.FlattenObservation(env)
 
 
@@ -87,7 +87,7 @@ class Model:
         return order
     
     def feed_forward(self, ulaz):
-        ulaz = ulaz / 127.5 - 1.0
+       # ulaz = ulaz / 127.5 - 1.0
         graf = self.graf
 
         ans = zeros(self.cnt)
@@ -96,7 +96,7 @@ class Model:
         n_inputs = len(ulaz)
         for i in self.topo_order:
             if i < n_inputs:
-                continue  # input node, already seeded
+                continue 
             node = graf[i]
             zb = 0
             for j in range(len(node)):
