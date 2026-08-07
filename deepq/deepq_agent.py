@@ -67,18 +67,18 @@ class Agent:
         # Convert observation to tensor
         state = torch.tensor(
             np.array(state),
-            dtype=torch.float32,
+            dtype=torch.float32,#floating-point numbers, 32 bits per number (fast, memory efficient, supported efficiently on GPUs.)
             device=self.device
-        ).unsqueeze(0)
+        ).unsqueeze(0)#"This is a batch containing exactly one state."; training - multiple states / playing - one state
 
 
-        with torch.no_grad():
+        with torch.no_grad():#training - calculate how each weight should change -> gameply "Don't build the computation graph. I'm only doing inference (prediction)."
 
             q_values = self.policy_net(state)
 
 
         # Choose action with highest Q value
-        return q_values.argmax(1).item()
+        return q_values.argmax(1).item()#.argmax(1) - dimensions - numbered, "For each row, find..."; .item() - extracts the value from a tensor that contains exactly one element
 
 
 
@@ -86,7 +86,7 @@ class Agent:
 
         # Wait until memory has enough data
         if len(self.memory) < batch_size:
-            return
+            return#random.sample(self.memory, 64) -> error (can't sample 64 unique items from a list of only 12); return - stp function
 
 
         batch = self.memory.sample(
@@ -94,9 +94,15 @@ class Agent:
         )
 
 
-        states, actions, rewards, next_states, dones = zip(*batch)
-
-
+        states, actions, rewards, next_states, dones = zip(*batch)# * "Give zip each element inside the list as a separate argument"; zip - separate by category
+        #Experience 1:
+#(state1, action1, reward1, next_state1, done1)
+#Experience 2:
+#(state2, action2, reward2, next_state2, done2)... ->
+#(
+#(state1, state2, state3),
+#(action1, action2, action3),...
+#)
 
         states = torch.tensor(
             np.array(states),
@@ -114,7 +120,7 @@ class Agent:
 
         actions = torch.tensor(
             actions,
-            device=self.device
+            device=self.device#tells PyTorch where to store the tensor (CPU or GPU)
         )
 
 
@@ -125,7 +131,7 @@ class Agent:
         )
 
 
-        dones = torch.tensor(
+        dones = torch.tensor(#dones = (False, False, True, False); agent learns that after a terminal state, there is no future value
             dones,
             dtype=torch.float32,
             device=self.device
@@ -136,17 +142,17 @@ class Agent:
         # Q value of chosen actions
         current_q = self.policy_net(states)
 
-        current_q = current_q.gather(
-            1,
+        current_q = current_q.gather(#gather - creates new tensor by selecting specific values from an input tensor based on the indices provided
+            1,#row=0; column=1
             actions.unsqueeze(1)
         ).squeeze(1)
-
+#"From the network's Q-value predictions, select the Q-value corresponding to the action taken in each experience, then remove the extra dimension."
 
 
         # Calculate target Q values
-        with torch.no_grad():
+        with torch.no_grad():#"Do not calculate or store gradients for the operations inside this block."
 
-            next_q = self.target_net(next_states)
+            next_q = self.target_net(next_states)#used only to calculate the target Q-value ↑
 
             max_next_q = next_q.max(1)[0]
 
@@ -168,9 +174,9 @@ class Agent:
         # Update network
         self.optimizer.zero_grad()
 
-        loss.backward()
+        loss.backward()#backward - calculates gradients for the nn's parameters; "Figure out how much each weight in the nn contributed to the error, calculate the direction it should change."
 
-        self.optimizer.step()
+        self.optimizer.step()#updates the nn's weights
 
 
 
