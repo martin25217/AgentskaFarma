@@ -1,0 +1,569 @@
+[
+  {
+    "elitizam_frac": 0.2586438903123288,
+    "mutation_prob": 0.5552102711857878,
+    "sigma": 1.0322666254233377,
+    "velicina_populacije": 100,
+    "score": 1680.0,
+    "elapsed_seconds": 346.7,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.13793700273174195,
+    "mutation_prob": 0.8798083415422004,
+    "sigma": 1.2342285185957467,
+    "velicina_populacije": 100,
+    "score": 1790.0,
+    "elapsed_seconds": 326.9,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.12332388576079235,
+    "mutation_prob": 0.6625913247073187,
+    "sigma": 1.2217248727550065,
+    "velicina_populacije": 100,
+    "score": 1680.0,
+    "elapsed_seconds": 327.2,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.10202252267339725,
+    "mutation_prob": 0.5621489797277772,
+    "sigma": 1.2781706152168852,
+    "velicina_populacije": 100,
+    "score": 3280.0,
+    "elapsed_seconds": 327.1,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.28155106641764793,
+    "mutation_prob": 0.8565541442800917,
+    "sigma": 1.061292050731741,
+    "velicina_populacije": 100,
+    "score": 3500.0,
+    "elapsed_seconds": 350.0,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.16125770607316892,
+    "mutation_prob": 0.9645362692985042,
+    "sigma": 1.1768441183303562,
+    "velicina_populacije": 100,
+    "score": 1640.0,
+    "elapsed_seconds": 330.3,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.2169632619133109,
+    "mutation_prob": 0.7882663697609481,
+    "sigma": 1.2759951183136766,
+    "velicina_populacije": 100,
+    "score": 1860.0,
+    "elapsed_seconds": 342.2,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.2556006200462269,
+    "mutation_prob": 0.44373883213260223,
+    "sigma": 1.2227138927836858,
+    "velicina_populacije": 100,
+    "score": 1660.0,
+    "elapsed_seconds": 355.0,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.03562875891611131,
+    "mutation_prob": 0.8158488883382957,
+    "sigma": 0.9263268209690614,
+    "velicina_populacije": 100,
+    "score": 3430.0,
+    "elapsed_seconds": 315.6,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.09301080024707309,
+    "mutation_prob": 0.5000878244341751,
+    "sigma": 0.9236003649388547,
+    "velicina_populacije": 100,
+    "score": 1670.0,
+    "elapsed_seconds": 338.8,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.2824518589092773,
+    "mutation_prob": 0.8298408986348644,
+    "sigma": 1.0214901153875247,
+    "velicina_populacije": 100,
+    "score": 1850.0,
+    "elapsed_seconds": 350.9,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.22476172968740785,
+    "mutation_prob": 0.8877195557504349,
+    "sigma": 1.210555758255634,
+    "velicina_populacije": 100,
+    "score": 1650.0,
+    "elapsed_seconds": 341.5,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.28155106641764793,
+    "mutation_prob": 0.8565541442800917,
+    "sigma": 1.061292050731741,
+    "velicina_populacije": 100,
+    "score": 1760.0,
+    "elapsed_seconds": 360.6,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.03562875891611131,
+    "mutation_prob": 0.8158488883382957,
+    "sigma": 0.9263268209690614,
+    "velicina_populacije": 100,
+    "score": 1620.0,
+    "elapsed_seconds": 330.8,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.20795758388443072,
+    "mutation_prob": 0.7516390094461068,
+    "sigma": 1.13311702194708,
+    "velicina_populacije": 100,
+    "score": 1740.0,
+    "elapsed_seconds": 352.1,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.11819447257583963,
+    "mutation_prob": 0.7026935550576079,
+    "sigma": 1.3,
+    "velicina_populacije": 100,
+    "score": 1730.0,
+    "elapsed_seconds": 325.3,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.041367123664379245,
+    "mutation_prob": 0.6837123572448989,
+    "sigma": 0.9513795321574454,
+    "velicina_populacije": 100,
+    "score": 1660.0,
+    "elapsed_seconds": 322.0,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.2114280796955767,
+    "mutation_prob": 0.8033846041590128,
+    "sigma": 1.2186759888142382,
+    "velicina_populacije": 100,
+    "score": 1680.0,
+    "elapsed_seconds": 334.8,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.1827459267259269,
+    "mutation_prob": 0.8300847145046515,
+    "sigma": 0.9898158960879492,
+    "velicina_populacije": 100,
+    "score": 1710.0,
+    "elapsed_seconds": 330.8,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.11324716142884826,
+    "mutation_prob": 0.8101532717605099,
+    "sigma": 0.983012646652274,
+    "velicina_populacije": 100,
+    "score": 1640.0,
+    "elapsed_seconds": 315.7,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.11101827815160378,
+    "mutation_prob": 0.8792331835996688,
+    "sigma": 1.0450555279388627,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 329.7,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.11797431930100126,
+    "mutation_prob": 0.8011628183997277,
+    "sigma": 1.273700231190259,
+    "velicina_populacije": 100,
+    "score": 1830.0,
+    "elapsed_seconds": 318.2,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.24934026238916934,
+    "mutation_prob": 0.8358885261685512,
+    "sigma": 1.2340940499930357,
+    "velicina_populacije": 100,
+    "score": 1710.0,
+    "elapsed_seconds": 348.1,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.12849072268124834,
+    "mutation_prob": 0.6626209527927679,
+    "sigma": 1.2766813557549836,
+    "velicina_populacije": 100,
+    "score": 1740.0,
+    "elapsed_seconds": 332.7,
+    "meta_generation": 1
+  },
+  {
+    "elitizam_frac": 0.11797431930100126,
+    "mutation_prob": 0.8011628183997277,
+    "sigma": 1.273700231190259,
+    "velicina_populacije": 100,
+    "score": 3280.0,
+    "elapsed_seconds": 321.6,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.28155106641764793,
+    "mutation_prob": 0.8565541442800917,
+    "sigma": 1.061292050731741,
+    "velicina_populacije": 100,
+    "score": 3510.0,
+    "elapsed_seconds": 350.7,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.22583907927280977,
+    "mutation_prob": 0.7756745437167407,
+    "sigma": 1.201392951794595,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 338.2,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.20896247457658426,
+    "mutation_prob": 0.8257104062708754,
+    "sigma": 1.1320314353138559,
+    "velicina_populacije": 100,
+    "score": 1870.0,
+    "elapsed_seconds": 336.4,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.2734103595149843,
+    "mutation_prob": 0.8267301402900604,
+    "sigma": 1.1326171678598875,
+    "velicina_populacije": 100,
+    "score": 3490.0,
+    "elapsed_seconds": 346.6,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.22985571065494304,
+    "mutation_prob": 0.7080850922614202,
+    "sigma": 1.2405065220025955,
+    "velicina_populacije": 100,
+    "score": 2140.0,
+    "elapsed_seconds": 330.0,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.15556881690870356,
+    "mutation_prob": 0.7326119543203201,
+    "sigma": 1.1992360702392273,
+    "velicina_populacije": 100,
+    "score": 1790.0,
+    "elapsed_seconds": 332.0,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.1897539713371245,
+    "mutation_prob": 0.7864656106315667,
+    "sigma": 1.1159964783264442,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 340.5,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.19245886829773248,
+    "mutation_prob": 0.7039657517634964,
+    "sigma": 1.3,
+    "velicina_populacije": 100,
+    "score": 1770.0,
+    "elapsed_seconds": 335.9,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.1385652451983424,
+    "mutation_prob": 0.7174435055337437,
+    "sigma": 1.241043376433364,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 335.4,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.12447564001722156,
+    "mutation_prob": 0.7590123395010946,
+    "sigma": 1.2763050799066074,
+    "velicina_populacije": 100,
+    "score": 1680.0,
+    "elapsed_seconds": 324.1,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.21382032242202603,
+    "mutation_prob": 0.8180661985814612,
+    "sigma": 1.0649921776610611,
+    "velicina_populacije": 100,
+    "score": 1630.0,
+    "elapsed_seconds": 333.3,
+    "meta_generation": 2
+  },
+  {
+    "elitizam_frac": 0.28155106641764793,
+    "mutation_prob": 0.8565541442800917,
+    "sigma": 1.061292050731741,
+    "velicina_populacije": 100,
+    "score": 1820.0,
+    "elapsed_seconds": 342.6,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.2734103595149843,
+    "mutation_prob": 0.8267301402900604,
+    "sigma": 1.1326171678598875,
+    "velicina_populacije": 100,
+    "score": 1780.0,
+    "elapsed_seconds": 332.6,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.2191367782942599,
+    "mutation_prob": 0.8929105071795062,
+    "sigma": 1.1795128710583398,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 339.0,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.22568542540270914,
+    "mutation_prob": 0.6594680422863078,
+    "sigma": 1.2575660578756533,
+    "velicina_populacije": 100,
+    "score": 1700.0,
+    "elapsed_seconds": 343.5,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.2298152331163286,
+    "mutation_prob": 0.7376983518460394,
+    "sigma": 1.249169032456856,
+    "velicina_populacije": 100,
+    "score": 1970.0,
+    "elapsed_seconds": 340.0,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.235972525113545,
+    "mutation_prob": 0.7182647431942902,
+    "sigma": 1.1470281779415599,
+    "velicina_populacije": 100,
+    "score": 1780.0,
+    "elapsed_seconds": 344.7,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.22672765905998524,
+    "mutation_prob": 0.8227853784474777,
+    "sigma": 1.268003460525376,
+    "velicina_populacije": 100,
+    "score": 1210.0,
+    "elapsed_seconds": 342.3,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.19940530651694827,
+    "mutation_prob": 0.7279594493108018,
+    "sigma": 1.3,
+    "velicina_populacije": 100,
+    "score": 1790.0,
+    "elapsed_seconds": 330.8,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.27906974633353826,
+    "mutation_prob": 0.8367802098996369,
+    "sigma": 1.1441341049786493,
+    "velicina_populacije": 100,
+    "score": 1640.0,
+    "elapsed_seconds": 346.2,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.27787250119220386,
+    "mutation_prob": 0.9276630962261666,
+    "sigma": 1.105920382033609,
+    "velicina_populacije": 100,
+    "score": 1730.0,
+    "elapsed_seconds": 342.2,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.20821393443480476,
+    "mutation_prob": 0.8487927346876665,
+    "sigma": 1.150996463018759,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 332.9,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.2473220441061259,
+    "mutation_prob": 0.8803139423665617,
+    "sigma": 1.0484113109272708,
+    "velicina_populacije": 100,
+    "score": 1770.0,
+    "elapsed_seconds": 340.8,
+    "meta_generation": 3
+  },
+  {
+    "elitizam_frac": 0.2298152331163286,
+    "mutation_prob": 0.7376983518460394,
+    "sigma": 1.249169032456856,
+    "velicina_populacije": 100,
+    "score": 1820.0,
+    "elapsed_seconds": 342.4,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.28155106641764793,
+    "mutation_prob": 0.8565541442800917,
+    "sigma": 1.061292050731741,
+    "velicina_populacije": 100,
+    "score": 1670.0,
+    "elapsed_seconds": 339.6,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.25110333002832486,
+    "mutation_prob": 0.7996619711592774,
+    "sigma": 1.2380679536041186,
+    "velicina_populacije": 100,
+    "score": 1950.0,
+    "elapsed_seconds": 340.2,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.2744553752442595,
+    "mutation_prob": 0.8326068590043655,
+    "sigma": 1.2573869087862117,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 345.2,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.1831871388812786,
+    "mutation_prob": 0.661488536644763,
+    "sigma": 1.1252827216634054,
+    "velicina_populacije": 100,
+    "score": 1710.0,
+    "elapsed_seconds": 335.6,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.2774262879673186,
+    "mutation_prob": 0.8126709586494296,
+    "sigma": 1.1927826972150322,
+    "velicina_populacije": 100,
+    "score": 1880.0,
+    "elapsed_seconds": 346.7,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.27284258543068696,
+    "mutation_prob": 0.7539132600189137,
+    "sigma": 1.1741543852627925,
+    "velicina_populacije": 100,
+    "score": 1610.0,
+    "elapsed_seconds": 341.6,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.2101754980030521,
+    "mutation_prob": 0.7826031903351385,
+    "sigma": 1.1933536791627815,
+    "velicina_populacije": 100,
+    "score": 1630.0,
+    "elapsed_seconds": 336.4,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.3,
+    "mutation_prob": 0.7809756416052032,
+    "sigma": 1.1248081784084316,
+    "velicina_populacije": 100,
+    "score": 1660.0,
+    "elapsed_seconds": 354.9,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.2024092561789834,
+    "mutation_prob": 0.7835504008578332,
+    "sigma": 1.2969847584858623,
+    "velicina_populacije": 100,
+    "score": 1780.0,
+    "elapsed_seconds": 333.7,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.3,
+    "mutation_prob": 0.7458503082356122,
+    "sigma": 1.2648773551330068,
+    "velicina_populacije": 100,
+    "score": 1740.0,
+    "elapsed_seconds": 345.8,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.2675144490507706,
+    "mutation_prob": 0.7368967484813732,
+    "sigma": 1.286570470004482,
+    "velicina_populacije": 100,
+    "score": 1760.0,
+    "elapsed_seconds": 350.3,
+    "meta_generation": 4
+  },
+  {
+    "elitizam_frac": 0.25110333002832486,
+    "mutation_prob": 0.7996619711592774,
+    "sigma": 1.2380679536041186,
+    "velicina_populacije": 100,
+    "score": 1670.0,
+    "elapsed_seconds": 344.8,
+    "meta_generation": 5
+  },
+  {
+    "elitizam_frac": 0.2774262879673186,
+    "mutation_prob": 0.8126709586494296,
+    "sigma": 1.1927826972150322,
+    "velicina_populacije": 100,
+    "score": 1780.0,
+    "elapsed_seconds": 354.2,
+    "meta_generation": 5
+  },
+  {
+    "elitizam_frac": 0.24575939589843274,
+    "mutation_prob": 0.7946897578644436,
+    "sigma": 1.3,
+    "velicina_populacije": 100,
+    "score": 1680.0,
+    "elapsed_seconds": 365.8,
+    "meta_generation": 5
+  }
+]

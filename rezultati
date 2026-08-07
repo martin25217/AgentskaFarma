@@ -1,0 +1,369 @@
+    Mijenjanje svega +30 gen
+    
+    {"velicina_populacije": 135,
+    "elitizam_frac": 0.28911201795113917,
+    "mutation_prob": 0.7078162360728735,
+    "sigma": 0.5724935807754452,
+    "score": 1640.0,
+    "elapsed_seconds": 470.1,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 31,
+    "elitizam_frac": 0.258381643237304,
+    "mutation_prob": 0.9384383149572184,
+    "sigma": 0.3405046545734741,
+    "score": 890.0,
+    "elapsed_seconds": 108.5,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 146,
+    "elitizam_frac": 0.0998921493744323,
+    "mutation_prob": 0.7583072542868977,
+    "sigma": 0.4841891501500991,
+    "score": 1640.0,
+    "elapsed_seconds": 489.9,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 56,
+    "elitizam_frac": 0.24948316362880296,
+    "mutation_prob": 0.672876028630521,
+    "sigma": 0.12372529618048587,
+    "score": 1610.0,
+    "elapsed_seconds": 197.4,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 32,
+    "elitizam_frac": 0.09860003838542342,
+    "mutation_prob": 0.8014639989479937,
+    "sigma": 0.5406188358640153,
+    "score": 1610.0,
+    "elapsed_seconds": 109.5,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 47,
+    "elitizam_frac": 0.2939194339189838,
+    "mutation_prob": 0.48037513720313796,
+    "sigma": 0.4276320747035117,
+    "score": 830.0,
+    "elapsed_seconds": 166.5,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 32,
+    "elitizam_frac": 0.1791151607496213,
+    "mutation_prob": 0.5583122251863222,
+    "sigma": 0.45077028918246553,
+    "score": 1070.0,
+    "elapsed_seconds": 118.1,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 69,
+    "elitizam_frac": 0.16937088490411378,
+    "mutation_prob": 0.5507672721591839,
+    "sigma": 0.1906912876278808,
+    "score": 840.0,
+    "elapsed_seconds": 219.9,
+    "meta_generation": 0
+  },
+  {
+    "velicina_populacije": 121,
+    "elitizam_frac": 0.12718042272254387,
+    "mutation_prob": 0.5034740413571077,
+    "sigma": 0.24200339415701475,
+    "score": 1610.0,
+    "elapsed_seconds": 413.8,
+    "meta_generation": 0
+  }
+
+  rezultati populacija je 100 sa 30 generacija i sigma je (0.1, 0.9)
+
+  {"elitizam_frac": 0.0700594169766469,
+    "mutation_prob": 0.4333831580115448,
+    "sigma": 0.502365404690804,
+    "velicina_populacije": 100,
+    "score": 1620.0,
+    "elapsed_seconds": 344.0,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.2981930608377636,
+    "mutation_prob": 0.41511916341273764,
+    "sigma": 0.3474028574477458,
+    "velicina_populacije": 100,
+    "score": 900.0,
+    "elapsed_seconds": 340.0,
+    "meta_generation": 0
+  },
+  {
+    "elitizam_frac": 0.2773482511908503,
+    "mutation_prob": 0.47970212952290936,
+    "sigma": 0.5885513423828571,
+    "velicina_populacije": 100,
+    "score": 1700.0,
+    "elapsed_seconds": 351.1,
+    "meta_generation": 0
+
+rezultati populacija je 100 sa 30 generacija i sigma je (0.1, 1.5)
+[
+    {
+      "elitizam_frac": 0.144932985748325,
+      "mutation_prob": 0.8797277187019124,
+      "sigma": 0.37147824441954924,
+      "velicina_populacije": 100,
+      "score": 1610.0,
+      "elapsed_seconds": 342.2,
+      "meta_generation": 0
+    },
+    {
+      "elitizam_frac": 0.23723173519392862,
+      "mutation_prob": 0.857181628950942,
+      "sigma": 0.450661378343287,
+      "velicina_populacije": 100,
+      "score": 1660.0,
+      "elapsed_seconds": 345.2,
+      "meta_generation": 0
+    },
+    {
+      "elitizam_frac": 0.2701793422596851,
+      "mutation_prob": 0.6991778871506957,
+      "sigma": 0.4330242015570577,
+      "velicina_populacije": 100,
+      "score": 1680.0,
+      "elapsed_seconds": 356.3,
+      "meta_generation": 0
+    },
+    {
+      "elitizam_frac": 0.10495134410912448,
+      "mutation_prob": 0.8986076483960599,
+      "sigma": 0.21185257519383388,
+      "velicina_populacije": 100,
+      "score": 1610.0,
+      "elapsed_seconds": 334.6,
+      "meta_generation": 0
+    },
+    {
+      "elitizam_frac": 0.02913707268234668,
+      "mutation_prob": 0.7039974286406764,
+      "sigma": 0.4527374586618077,
+      "velicina_populacije": 100,
+      "score": 1640.0,
+      "elapsed_seconds": 361.8,
+      "meta_generation": 0
+    },
+    {
+      "elitizam_frac": 0.2451685549987976,
+      "mutation_prob": 0.8354204623080423,
+      "sigma": 0.2952731421432044,
+      "velicina_populacije": 100,
+      "score": 1700.0,
+      "elapsed_seconds": 344.5,
+      "meta_generation": 0
+    },
+    {
+      "elitizam_frac": 0.2213312026975497,
+      "mutation_prob": 0.7227966084598738,
+      "sigma": 1.1931632883138155,
+      "velicina_populacije": 100,
+      "score": 1610.0,
+      "elapsed_seconds": 339.6,
+      "meta_generation": 0
+
+      rezultati populacija je 100 sa 30 generacija i sigma je (0.5, 1.3)   
+
+      [
+        {
+          "elitizam_frac": 0.2795606341898081,
+          "mutation_prob": 0.5223428072112226,
+          "sigma": 0.8036865167401662,
+          "velicina_populacije": 100,
+          "score": 1640.0,
+          "elapsed_seconds": 361.5,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.2918183553821657,
+          "mutation_prob": 0.6787216695390171,
+          "sigma": 0.7891089517316703,
+          "velicina_populacije": 100,
+          "score": 1660.0,
+          "elapsed_seconds": 352.9,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.11729604951443542,
+          "mutation_prob": 0.7503218227262469,
+          "sigma": 1.1709522000198658,
+          "velicina_populacije": 100,
+          "score": 3220.0,
+          "elapsed_seconds": 337.6,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.1255301601165746,
+          "mutation_prob": 0.6972323385868413,
+          "sigma": 0.9212028105189136,
+          "velicina_populacije": 100,
+          "score": 1920.0,
+          "elapsed_seconds": 326.6,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.1152536064214455,
+          "mutation_prob": 0.472641106003296,
+          "sigma": 1.1479365767365048,
+          "velicina_populacije": 100,
+          "score": 1640.0,
+          "elapsed_seconds": 315.8,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.24121976146599433,
+          "mutation_prob": 0.7299383616574051,
+          "sigma": 0.7160663957349706,
+          "velicina_populacije": 100,
+          "score": 1640.0,
+          "elapsed_seconds": 337.9,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.18465032537254095,
+          "mutation_prob": 0.3240636715502268,
+          "sigma": 0.9694325470672945,
+          "velicina_populacije": 100,
+          "score": 3490.0,
+          "elapsed_seconds": 348.7,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.2831243810554565,
+          "mutation_prob": 0.9088610856900452,
+          "sigma": 0.5163268767081285,
+          "velicina_populacije": 100,
+          "score": 1610.0,
+          "elapsed_seconds": 353.1,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.1279383248018195,
+          "mutation_prob": 0.7232251985556133,
+          "sigma": 0.881308723693323,
+          "velicina_populacije": 100,
+          "score": 1730.0,
+          "elapsed_seconds": 324.7,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.2266035188898323,
+          "mutation_prob": 0.9148008464998025,
+          "sigma": 1.0779856171233655,
+          "velicina_populacije": 100,
+          "score": 1700.0,
+          "elapsed_seconds": 348.0,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.2074659399212718,
+          "mutation_prob": 0.3944050521073126,
+          "sigma": 1.1819461823853015,
+          "velicina_populacije": 100,
+          "score": 1690.0,
+          "elapsed_seconds": 339.5,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.06271653714822216,
+          "mutation_prob": 0.7319778688670322,
+          "sigma": 1.0369111030188982,
+          "velicina_populacije": 100,
+          "score": 1800.0,
+          "elapsed_seconds": 315.9,
+          "meta_generation": 0
+        },
+        {
+          "elitizam_frac": 0.18465032537254095,
+          "mutation_prob": 0.3240636715502268,
+          "sigma": 0.9694325470672945,
+          "velicina_populacije": 100,
+          "score": 1660.0,
+          "elapsed_seconds": 329.3,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.11729604951443542,
+          "mutation_prob": 0.7503218227262469,
+          "sigma": 1.1709522000198658,
+          "velicina_populacije": 100,
+          "score": 1640.0,
+          "elapsed_seconds": 324.7,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.13597825196168595,
+          "mutation_prob": 0.689521850128879,
+          "sigma": 1.0043327299928477,
+          "velicina_populacije": 100,
+          "score": 1640.0,
+          "elapsed_seconds": 346.2,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.12122232726838596,
+          "mutation_prob": 0.5261253937183914,
+          "sigma": 1.098589213039449,
+          "velicina_populacije": 100,
+          "score": 1910.0,
+          "elapsed_seconds": 345.7,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.08292689996332538,
+          "mutation_prob": 0.7033717848257525,
+          "sigma": 1.0255833547763271,
+          "velicina_populacije": 100,
+          "score": 1720.0,
+          "elapsed_seconds": 321.3,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.09855208728484037,
+          "mutation_prob": 0.6496748447223362,
+          "sigma": 1.1411717662887788,
+          "velicina_populacije": 100,
+          "score": 1790.0,
+          "elapsed_seconds": 314.7,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.14961829132913437,
+          "mutation_prob": 0.6203097195877819,
+          "sigma": 0.8167245839608712,
+          "velicina_populacije": 100,
+          "score": 1710.0,
+          "elapsed_seconds": 339.3,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.10721185384236039,
+          "mutation_prob": 0.7007159745795979,
+          "sigma": 0.8442189464015579,
+          "velicina_populacije": 100,
+          "score": 1780.0,
+          "elapsed_seconds": 349.7,
+          "meta_generation": 1
+        },
+        {
+          "elitizam_frac": 0.12393242484031775,
+          "mutation_prob": 0.6571197433414715,
+          "sigma": 0.9912144298381365,
+          "velicina_populacije": 100,
+          "score": 1670.0,
+          "elapsed_seconds": 326.8,
+          "meta_generation": 1
+        }
+      ]

@@ -121,9 +121,12 @@ def check():
     print("OK")
 
 
-def run_genetic(sigma, velicina_populacije, elitizam, broj_generacija, mutation_prob, kol=100):
+def run_genetic(kol=100):
     populacija = []
-    maxi = -10000000
+    elitizam= 0.28155106641764793
+    mutation_prob=0.8565541442800917
+    sigma= 1.061292050731741
+    velicina_populacije= 100
 
     for _ in range(velicina_populacije):
         x = Model([kol, int(kol/2), 30, 30, 20, 9], COORDINATE_INPUTS)
@@ -186,11 +189,11 @@ if __name__ == "__main__":
 
     if args.genetic:
         run_genetic(
-        sigma=0.5,
+        sigma=1.061292050731741,
         velicina_populacije=50,
-        elitizam=5,
+        elitizam=1,
         broj_generacija=2000,
-        mutation_prob=0.9, )
+        mutation_prob=0.8565541442800917, )
     else:
         if args.check:
             check()
