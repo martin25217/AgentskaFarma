@@ -1,4 +1,4 @@
-from collections import deque
+from collections import deque#(Double-Ended Queue) allows adding and removing elements from both ends of a sequence
 import random
 
 
@@ -6,7 +6,7 @@ class ReplayMemory:
 
     def __init__(self, capacity):
         self.memory = deque(
-            maxlen=capacity
+            maxlen=capacity#creates a double-ended queue with a fixed maximum length
         )
 
 
