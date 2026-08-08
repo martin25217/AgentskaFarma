@@ -17,15 +17,8 @@ cnt = 0
 
 gym.register_envs(ale_py)
 
-env = gym.make("ALE/MsPacman-v5", obs_type="rgb", render_mode="human", repeat_action_probability=0.0)
+env = gym.make("ALE/MsPacman-v5", obs_type="rgb", render_mode="rgb_arrayx   ", repeat_action_probability=0.0)
 
-# ---------------------------------------------------------------------------
-# CALIBRATION REQUIRED: these RGB values are best-guess placeholders for the
-# ALE MsPacman palette. Verify against a real frame before trusting results:
-#   obs, _ = env.reset()
-#   print(obs.shape)              # should be (210, 160, 3)
-#   # then inspect obs[y, x] at known sprite locations, or plt.imshow(obs)
-# ---------------------------------------------------------------------------
 PACMAN_COLOR = array([210, 164, 74])
 GHOST_COLORS = {
     "red":    array([200, 72, 72]),
@@ -40,7 +33,7 @@ POWER_PELLET_COLOR = array([187, 187, 53])
 COLOR_TOLERANCE = 25
 
 FRAME_H, FRAME_W = 210, 160
-GRID_H, GRID_W = 8, 10          # pellet density grid resolution — raise toward e.g. 16x14 if you want closer to 500 total input dims
+GRID_H, GRID_W = 8, 10
 
 FRAME_STACK_SIZE = 4
 
@@ -144,6 +137,10 @@ def build_input_vector(frame_history):
         velocity = [0.0] * VELOCITY_DIM
 
     return concatenate([latest_feats, array(velocity)])
+
+
+
+    ####SVE GORE JE ZA GENERIRANJE INPUT VEKTORA
 
 def compatibility_distance(g1, g2):
 
@@ -353,19 +350,9 @@ class Model:
             from_node = pyrandom.choice(nodes)
             to_node = pyrandom.choice(nodes)
 
-            # Node ne može biti povezan sam sa sobom
-            if from_node == to_node:
+            if from_node == to_node or to_node < input_count or output_start <= from_node < output_end:
                 continue
 
-            # Ne dopuštamo veze koje ulaze u input
-            if to_node < input_count:
-                continue
-
-            # Ne dopuštamo veze koje izlaze iz outputa
-            if output_start <= from_node < output_end:
-                continue
-
-            # Veza već postoji
             if (from_node, to_node) in existing_connections:
                 continue
 
@@ -413,10 +400,6 @@ class Model:
         self.score = 0
         self.sigma = sigma
 
-        # --------------------------------------------------
-        # 1. Odredi koji je roditelj bolji
-        # --------------------------------------------------
-
         if x2.score > x1.score:
             fitter = x2
             weaker = x1
@@ -434,10 +417,6 @@ class Model:
         i = 0
         j = 0
 
-        # --------------------------------------------------
-        # 2. NEAT crossover po innovation brojevima
-        # --------------------------------------------------
-
         while i < len(genes1) and j < len(genes2):
 
             gene1 = genes1[i]
@@ -447,7 +426,6 @@ class Model:
             innovation2 = gene2[4]
 
             if innovation1 == innovation2:
-                # Matching gene: uzmi nasumično od jednog roditelja
                 new_gene = pyrandom.choice([gene1, gene2]).copy()
 
                 # Ako je gen kod jednog roditelja disabled,
@@ -461,7 +439,6 @@ class Model:
                 j += 1
 
             elif innovation1 < innovation2:
-                # Gen postoji samo u x1
 
                 if equal_fitness:
                     if rng.random() < 0.5:
@@ -473,7 +450,6 @@ class Model:
                 i += 1
 
             else:
-                # Gen postoji samo u x2
 
                 if equal_fitness:
                     if rng.random() < 0.5:
@@ -484,7 +460,6 @@ class Model:
 
                 j += 1
 
-        # Preostali excess geni roditelja x1
         while i < len(genes1):
             gene1 = genes1[i]
 
@@ -497,7 +472,6 @@ class Model:
 
             i += 1
 
-        # Preostali excess geni roditelja x2
         while j < len(genes2):
             gene2 = genes2[j]
 
@@ -512,10 +486,6 @@ class Model:
 
         self.weights = child_genes
 
-        # --------------------------------------------------
-        # 3. Mutacija težina
-        # --------------------------------------------------
-
         for gene in self.weights:
             if rng.random() < 0.10:
                 gene[2] += rng.normal(0, sigma)
@@ -523,10 +493,6 @@ class Model:
             # Mala šansa da se težina potpuno zamijeni
             elif rng.random() < 0.01:
                 gene[2] = rng.normal(0, 1)
-
-        # --------------------------------------------------
-        # 4. Add-node mutacija — jednom po genomu
-        # --------------------------------------------------
 
         if rng.random() < 0.03:
             enabled_genes = [

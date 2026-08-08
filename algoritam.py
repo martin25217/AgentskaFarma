@@ -39,17 +39,12 @@ for model in populacija:
         gene[2] += random.normal(0, 0.1)
     rebuild_graph(model)
 
-#for _ in range(velicina_populacije):
-   # populacija.append(Model(zeros(INPUT_DIM)))
-
-
 for generacija in range(broj_generacija):
     print("generacija:", generacija)
     t0 = time.time()
 
     evaluacija = []
 
-    # 1. Evaluiraj cijelu populaciju
     for model in populacija:
         score = model.eval_model()
         model.score = score
