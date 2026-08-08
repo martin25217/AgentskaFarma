@@ -10,13 +10,11 @@ DEMO + GIF:
 
 import argparse
 import os
-import time
 
 import gymnasium as gym
 import numpy as np
 
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
-
 
 # ---------------------------------------------------------
 # Seed
